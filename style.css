@@ -39,7 +39,7 @@ body {
 }
 
 .app-header {
-  padding: calc(16px + env(safe-area-inset-top)) 18px 10px;
+  padding: calc(14px + env(safe-area-inset-top)) 16px 8px;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -57,7 +57,7 @@ body {
 
 h1 {
   margin: 1px 0 0;
-  font-size: 42px;
+  font-size: 34px;
   line-height: .9;
   letter-spacing: -1.8px;
 }
@@ -65,7 +65,7 @@ h1 {
 .month-select {
   width: auto;
   min-width: 122px;
-  height: 44px;
+  height: 42px;
   border-radius: 999px;
   background: rgba(255,255,255,.13);
   color: white;
@@ -86,7 +86,7 @@ h1 {
 .hero-card,
 .input-panel {
   width: 100%;
-  border-radius: 28px;
+  border-radius: 24px;
   background: rgba(27,29,35,.98);
   border: 1px solid rgba(255,255,255,.08);
   box-shadow: 0 12px 36px rgba(0,0,0,.25);
@@ -94,7 +94,7 @@ h1 {
 
 .sheet-card,
 .input-panel {
-  padding: 16px;
+  padding: 12px;
 }
 
 .section-title {
@@ -107,7 +107,7 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .user-button {
@@ -134,7 +134,7 @@ h1 {
 }
 
 .favorite-button {
-  min-height: 44px;
+  min-height: 42px;
   border-radius: 18px;
   background: rgba(255,255,255,.08);
   color: white;
@@ -155,7 +155,7 @@ h1 {
 }
 
 .hero-card {
-  padding: 17px;
+  padding: 12px;
   margin-bottom: 12px;
 }
 
@@ -164,11 +164,11 @@ h1 {
   justify-content: space-between;
   align-items: flex-start;
   gap: 14px;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .hero-category {
-  font-size: 44px;
+  font-size: 38px;
   line-height: .95;
   font-weight: 950;
   letter-spacing: -1.8px;
@@ -179,7 +179,7 @@ h1 {
 }
 
 .balance-amount {
-  font-size: 40px;
+  font-size: 34px;
   line-height: 1;
   font-weight: 950;
   letter-spacing: -1.7px;
@@ -187,11 +187,11 @@ h1 {
 
 .progress-track {
   width: 100%;
-  height: 15px;
+  height: 13px;
   border-radius: 999px;
   background: rgba(255,255,255,.11);
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .progress-fill {
@@ -219,8 +219,8 @@ h1 {
 
 .stats-grid div {
   background: rgba(255,255,255,.07);
-  border-radius: 20px;
-  padding: 14px;
+  border-radius: 18px;
+  padding: 12px;
 }
 
 .stats-grid span {
@@ -232,17 +232,17 @@ h1 {
 }
 
 .stats-grid strong {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 900;
 }
 
 .input-panel {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 label {
   display: block;
-  margin-bottom: 13px;
+  margin-bottom: 11px;
 }
 
 label span {
@@ -252,14 +252,14 @@ label span {
   text-transform: uppercase;
   letter-spacing: .08em;
   font-weight: 850;
-  margin-bottom: 7px;
+  margin-bottom: 6px;
 }
 
 select,
 input {
   width: 100%;
   border: 0;
-  border-radius: 20px;
+  border-radius: 18px;
   background: white;
   color: #050505;
   outline: none;
@@ -268,23 +268,23 @@ input {
 
 #categorySelect,
 #userSelect {
-  height: 54px;
+  height: 52px;
   font-size: 18px;
   font-weight: 650;
 }
 
 input {
-  height: 66px;
-  font-size: 36px;
+  height: 62px;
+  font-size: 34px;
   font-weight: 900;
   letter-spacing: -1px;
 }
 
 button {
   width: 100%;
-  min-height: 58px;
+  min-height: 56px;
   border: 0;
-  border-radius: 22px;
+  border-radius: 20px;
   background: var(--green);
   color: white;
   font-size: 18px;
@@ -302,8 +302,8 @@ button:disabled {
 
 .toast {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 20px;
+  padding: 13px 15px;
+  border-radius: 18px;
   text-align: center;
   font-size: 14px;
   font-weight: 850;
@@ -327,10 +327,12 @@ button:disabled {
 }
 
 @media (max-height: 740px) {
-  h1 { font-size: 34px; }
-  .hero-category, .balance-amount { font-size: 34px; }
-  .hero-card { padding: 14px; border-radius: 24px; }
-  .input-panel { padding: 14px; border-radius: 24px; }
-  input { height: 58px; font-size: 31px; }
-  button { min-height: 52px; }
+  h1 { font-size: 32px; }
+  .hero-category { font-size: 32px; }
+  .balance-amount { font-size: 30px; }
+  .hero-card { padding: 12px; border-radius: 24px; }
+  .input-panel { padding: 12px; border-radius: 24px; }
+  input { height: 56px; font-size: 30px; }
+  button { min-height: 50px; }
+  .favorite-button, .user-button { min-height: 40px; }
 }
