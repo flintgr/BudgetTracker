@@ -44,6 +44,12 @@ function cacheElements() {
   App.els.userSelect = document.getElementById("userSelect");
   App.els.continueBtn = document.getElementById("continueBtn");
   App.els.mainApp = document.getElementById("mainApp");
+  App.els.dashboardCard = document.getElementById("dashboardCard");
+  App.els.dashRemaining = document.getElementById("dashRemaining");
+  App.els.dashPercent = document.getElementById("dashPercent");
+  App.els.dashProgressFill = document.getElementById("dashProgressFill");
+  App.els.dashIncome = document.getElementById("dashIncome");
+  App.els.dashExpenses = document.getElementById("dashExpenses");
   App.els.userButtons = document.getElementById("userButtons");
   App.els.favoriteButtons = document.getElementById("favoriteButtons");
   App.els.heroCard = document.getElementById("heroCard");
@@ -118,10 +124,31 @@ function renderAll() {
   else showSetup();
 
   restoreCategoryIfPossible();
+  renderDashboard();
   renderUsers();
   renderFavorites();
   renderPreview();
   focusAmount();
+}
+
+function renderDashboard() {
+  if (!App.data || !App.data.dashboard) return;
+
+  const dash = App.data.dashboard;
+
+  App.els.dashboardCard.classList.remove("hidden");
+  App.els.dashRemaining.textContent = formatMoney(dash.remainingAfterSpent);
+  App.els.dashIncome.textContent = formatMoney(dash.totalIncome);
+  App.els.dashExpenses.textContent = formatMoney(dash.totalSpent);
+
+  const pct = Math.round(Number(dash.spentPercent) || 0);
+  App.els.dashPercent.textContent = pct + "%";
+
+  App.els.dashProgressFill.style.width = Math.min(pct, 100) + "%";
+  App.els.dashProgressFill.className = "dash-progress-fill";
+
+  if (pct >= 90) App.els.dashProgressFill.classList.add("danger");
+  else if (pct >= 70) App.els.dashProgressFill.classList.add("warning");
 }
 
 function renderMonths() {
@@ -309,6 +336,7 @@ function reloadAfterSave(month, category) {
       renderSetupUsers();
       renderCategories();
       App.els.categorySelect.value = category;
+      renderDashboard();
       renderUsers();
       renderFavorites();
       renderPreview();

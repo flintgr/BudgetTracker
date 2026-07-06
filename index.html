@@ -37,6 +37,34 @@
 
       <section id="mainApp" class="hidden">
 
+        <section id="dashboardCard" class="dashboard-card hidden">
+          <div class="dash-top">
+            <div>
+              <div class="mini-label">Available this month</div>
+              <div id="dashRemaining" class="dash-main"></div>
+            </div>
+            <div class="dash-percent">
+              <div id="dashPercent"></div>
+              <span>spent</span>
+            </div>
+          </div>
+
+          <div class="dash-progress-track">
+            <div id="dashProgressFill" class="dash-progress-fill"></div>
+          </div>
+
+          <div class="dash-grid">
+            <div>
+              <span>Income</span>
+              <strong id="dashIncome"></strong>
+            </div>
+            <div>
+              <span>Expenses</span>
+              <strong id="dashExpenses"></strong>
+            </div>
+          </div>
+        </section>
+
         <div id="userButtons" class="user-buttons"></div>
 
         <div id="favoriteButtons" class="favorite-buttons"></div>

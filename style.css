@@ -57,7 +57,7 @@ body {
 
 h1 {
   margin: 1px 0 0;
-  font-size: 34px;
+  font-size: 40px;
   line-height: .9;
   letter-spacing: -1.8px;
 }
@@ -83,6 +83,7 @@ h1 {
 }
 
 .sheet-card,
+.dashboard-card,
 .hero-card,
 .input-panel {
   width: 100%;
@@ -94,13 +95,102 @@ h1 {
 
 .sheet-card,
 .input-panel {
-  padding: 12px;
+  padding: 14px;
 }
 
 .section-title {
   font-size: 24px;
   font-weight: 900;
   margin-bottom: 12px;
+}
+
+.dashboard-card {
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.dash-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dash-main {
+  font-size: 38px;
+  line-height: .95;
+  font-weight: 950;
+  letter-spacing: -1.6px;
+}
+
+.dash-percent {
+  text-align: right;
+}
+
+.dash-percent div {
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.dash-percent span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.dash-progress-track {
+  width: 100%;
+  height: 13px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.11);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.dash-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: var(--green);
+  transition: width .25s ease, background .25s ease;
+}
+
+.dash-progress-fill.warning {
+  background: var(--orange);
+}
+
+.dash-progress-fill.danger {
+  background: var(--red);
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dash-grid div {
+  background: rgba(255,255,255,.07);
+  border-radius: 18px;
+  padding: 12px;
+}
+
+.dash-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.dash-grid strong {
+  font-size: 20px;
+  font-weight: 900;
 }
 
 .user-buttons {
@@ -111,7 +201,7 @@ h1 {
 }
 
 .user-button {
-  min-height: 46px;
+  min-height: 44px;
   border-radius: 999px;
   background: rgba(255,255,255,.08);
   color: white;
@@ -130,11 +220,11 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .favorite-button {
-  min-height: 42px;
+  min-height: 44px;
   border-radius: 18px;
   background: rgba(255,255,255,.08);
   color: white;
@@ -155,23 +245,23 @@ h1 {
 }
 
 .hero-card {
-  padding: 12px;
-  margin-bottom: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
 }
 
 .hero-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .hero-category {
   font-size: 38px;
   line-height: .95;
   font-weight: 950;
-  letter-spacing: -1.8px;
+  letter-spacing: -1.6px;
 }
 
 .hero-balance {
@@ -182,7 +272,7 @@ h1 {
   font-size: 34px;
   line-height: 1;
   font-weight: 950;
-  letter-spacing: -1.7px;
+  letter-spacing: -1.4px;
 }
 
 .progress-track {
@@ -228,7 +318,7 @@ h1 {
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .stats-grid strong {
@@ -237,7 +327,7 @@ h1 {
 }
 
 .input-panel {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 label {
@@ -328,10 +418,13 @@ button:disabled {
 
 @media (max-height: 740px) {
   h1 { font-size: 32px; }
+  .app-header { padding-top: calc(10px + env(safe-area-inset-top)); }
+  .dash-main { font-size: 32px; }
+  .dash-percent div { font-size: 26px; }
   .hero-category { font-size: 32px; }
   .balance-amount { font-size: 30px; }
-  .hero-card { padding: 12px; border-radius: 24px; }
-  .input-panel { padding: 12px; border-radius: 24px; }
+  .dashboard-card, .hero-card { padding: 12px; border-radius: 22px; }
+  .input-panel { padding: 12px; border-radius: 22px; }
   input { height: 56px; font-size: 30px; }
   button { min-height: 50px; }
   .favorite-button, .user-button { min-height: 40px; }
