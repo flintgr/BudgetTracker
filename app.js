@@ -71,6 +71,9 @@ function cacheElements() {
   App.els.amountInput = document.getElementById("amountInput");
   App.els.addBtn = document.getElementById("addBtn");
   App.els.message = document.getElementById("message");
+  App.els.undoCard = document.getElementById("undoCard");
+  App.els.lastExpenseText = document.getElementById("lastExpenseText");
+  App.els.undoBtn = document.getElementById("undoBtn");
   App.els.budgetList = document.getElementById("budgetList");
   App.els.settingsMonth = document.getElementById("settingsMonth");
   App.els.settingsUser = document.getElementById("settingsUser");
@@ -105,6 +108,7 @@ function bindEvents() {
   });
 
   App.els.addBtn.addEventListener("click", submitExpense);
+  App.els.undoBtn.addEventListener("click", undoLastExpense);
   App.els.createMonthBtn.addEventListener("click", createNextMonth);
 
   document.addEventListener("keydown", event => {
@@ -163,6 +167,7 @@ function renderAll() {
   renderUsers();
   renderFavorites();
   renderPreview();
+  renderUndo();
   switchView(App.state.view);
   focusAmount();
 }
@@ -223,6 +228,40 @@ function renderSettings() {
   } else {
     App.els.createMonthBtn.textContent = "Create Next Month";
   }
+}
+
+
+function renderUndo() {
+  const tx = App.data && App.data.lastTransaction;
+
+  if (!tx || !tx.amount) {
+    App.els.undoCard.classList.add("hidden");
+    return;
+  }
+
+  App.els.undoCard.classList.remove("hidden");
+  App.els.lastExpenseText.textContent = formatMoney(tx.amount) + " · " + tx.category + " · " + tx.user;
+}
+
+function undoLastExpense() {
+  if (!App.state.user || !App.state.month) return;
+
+  const ok = confirm("Undo last expense for " + App.state.user + "?");
+  if (!ok) return;
+
+  App.els.undoBtn.disabled = true;
+  App.els.undoBtn.textContent = "Undoing...";
+
+  apiCall({ action: "undoLastExpense", user: App.state.user, month: App.state.month })
+    .then(result => {
+      showMessage(result.message, "warning");
+      return loadData(App.state.month);
+    })
+    .catch(error => showMessage(error.message, "error"))
+    .finally(() => {
+      App.els.undoBtn.disabled = false;
+      App.els.undoBtn.textContent = "Undo";
+    });
 }
 
 function createNextMonth() {
@@ -443,6 +482,7 @@ function reloadAfterSave(month, category) {
       renderUsers();
       renderFavorites();
       renderPreview();
+      renderUndo();
       focusAmount();
     });
 }

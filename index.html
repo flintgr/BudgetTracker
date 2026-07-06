@@ -58,6 +58,14 @@
             <label><span>Amount</span><input id="amountInput" type="number" inputmode="decimal" placeholder="0.00"></label>
             <button id="addBtn">Add Expense</button>
           </section>
+          <section id="undoCard" class="undo-card hidden">
+            <div>
+              <span>Last expense</span>
+              <strong id="lastExpenseText"></strong>
+            </div>
+            <button id="undoBtn">Undo</button>
+          </section>
+
           <div id="message" class="toast hidden"></div>
         </section>
 
