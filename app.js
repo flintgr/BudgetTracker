@@ -11,7 +11,8 @@ const App = {
   state: {
     month: "",
     user: "",
-    category: ""
+    category: "",
+    view: "home"
   },
   els: {}
 };
@@ -44,6 +45,14 @@ function cacheElements() {
   App.els.userSelect = document.getElementById("userSelect");
   App.els.continueBtn = document.getElementById("continueBtn");
   App.els.mainApp = document.getElementById("mainApp");
+  App.els.bottomNav = document.getElementById("bottomNav");
+  App.els.views = {
+    home: document.getElementById("viewHome"),
+    budget: document.getElementById("viewBudget"),
+    dashboard: document.getElementById("viewDashboard"),
+    settings: document.getElementById("viewSettings")
+  };
+  App.els.navButtons = Array.from(document.querySelectorAll(".nav-btn"));
   App.els.dashboardCard = document.getElementById("dashboardCard");
   App.els.dashRemaining = document.getElementById("dashRemaining");
   App.els.dashPercent = document.getElementById("dashPercent");
@@ -62,6 +71,9 @@ function cacheElements() {
   App.els.amountInput = document.getElementById("amountInput");
   App.els.addBtn = document.getElementById("addBtn");
   App.els.message = document.getElementById("message");
+  App.els.budgetList = document.getElementById("budgetList");
+  App.els.settingsMonth = document.getElementById("settingsMonth");
+  App.els.settingsUser = document.getElementById("settingsUser");
 }
 
 function bindEvents() {
@@ -72,6 +84,10 @@ function bindEvents() {
     localStorage.setItem("budgetTrackerLastCategory", App.state.category);
     showMessage("Loading " + App.state.month + "...", "success");
     loadData(App.state.month);
+  });
+
+  App.els.navButtons.forEach(button => {
+    button.addEventListener("click", () => switchView(button.dataset.view));
   });
 
   App.els.categorySelect.addEventListener("change", () => {
@@ -94,6 +110,20 @@ function bindEvents() {
       submitExpense();
     }
   });
+}
+
+function switchView(viewName) {
+  App.state.view = viewName;
+
+  Object.entries(App.els.views).forEach(([name, el]) => {
+    el.classList.toggle("active-view", name === viewName);
+  });
+
+  App.els.navButtons.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.view === viewName);
+  });
+
+  if (viewName === "home") focusAmount();
 }
 
 function loadData(month) {
@@ -125,9 +155,12 @@ function renderAll() {
 
   restoreCategoryIfPossible();
   renderDashboard();
+  renderBudgetList();
+  renderSettings();
   renderUsers();
   renderFavorites();
   renderPreview();
+  switchView(App.state.view);
   focusAmount();
 }
 
@@ -149,6 +182,38 @@ function renderDashboard() {
 
   if (pct >= 90) App.els.dashProgressFill.classList.add("danger");
   else if (pct >= 70) App.els.dashProgressFill.classList.add("warning");
+}
+
+function renderBudgetList() {
+  App.els.budgetList.innerHTML = "";
+
+  App.data.categories.forEach(item => {
+    const budget = Number(item.budget) || 0;
+    const spent = Number(item.totalSpent) || 0;
+    const pct = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
+
+    const row = document.createElement("div");
+    row.className = "budget-row";
+    row.innerHTML = `
+      <div class="budget-row-top">
+        <div class="budget-row-title">${escapeHtml(item.category)}</div>
+        <div class="budget-row-balance">${formatMoney(item.balance)}</div>
+      </div>
+      <div class="budget-mini-track">
+        <div class="budget-mini-fill" style="width:${pct}%"></div>
+      </div>
+    `;
+    row.addEventListener("click", () => {
+      setCategory(item.category);
+      switchView("home");
+    });
+    App.els.budgetList.appendChild(row);
+  });
+}
+
+function renderSettings() {
+  App.els.settingsMonth.textContent = App.state.month || "-";
+  App.els.settingsUser.textContent = App.state.user || "-";
 }
 
 function renderMonths() {
@@ -185,6 +250,7 @@ function renderUsers() {
     button.addEventListener("click", () => {
       setUser(user);
       renderUsers();
+      renderSettings();
       focusAmount();
     });
     App.els.userButtons.appendChild(button);
@@ -277,11 +343,13 @@ function renderProgress(item) {
 function showSetup() {
   App.els.setupCard.classList.remove("hidden");
   App.els.mainApp.classList.add("hidden");
+  App.els.bottomNav.classList.add("hidden");
 }
 
 function showMain() {
   App.els.setupCard.classList.add("hidden");
   App.els.mainApp.classList.remove("hidden");
+  App.els.bottomNav.classList.remove("hidden");
 }
 
 function submitExpense() {
@@ -337,6 +405,8 @@ function reloadAfterSave(month, category) {
       renderCategories();
       App.els.categorySelect.value = category;
       renderDashboard();
+      renderBudgetList();
+      renderSettings();
       renderUsers();
       renderFavorites();
       renderPreview();
@@ -375,6 +445,7 @@ function apiCall(params) {
 }
 
 function focusAmount() {
+  if (App.state.view !== "home") return;
   setTimeout(() => {
     if (App.els.amountInput) App.els.amountInput.focus();
   }, 250);
@@ -388,4 +459,13 @@ function showMessage(text, type) {
 
 function formatMoney(value) {
   return "€" + Number(value).toFixed(2);
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }

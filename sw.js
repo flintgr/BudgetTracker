@@ -1,4 +1,4 @@
-const CACHE_NAME = "budget-tracker-v50";
+const CACHE_NAME = "budget-tracker-v51";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
