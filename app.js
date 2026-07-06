@@ -40,7 +40,8 @@ function init() {
 }
 
 function cacheElements() {
-  App.els.monthSelect = document.getElementById("monthSelect");
+  App.els.monthButton = document.getElementById("monthButton");
+  App.els.monthMenu = document.getElementById("monthMenu");
   App.els.setupCard = document.getElementById("setupCard");
   App.els.userSelect = document.getElementById("userSelect");
   App.els.continueBtn = document.getElementById("continueBtn");
@@ -82,13 +83,14 @@ function cacheElements() {
 }
 
 function bindEvents() {
-  App.els.monthSelect.addEventListener("change", () => {
-    App.state.month = App.els.monthSelect.value;
-    App.state.category = "SM";
-    localStorage.setItem("budgetTrackerMonth", App.state.month);
-    localStorage.setItem("budgetTrackerLastCategory", App.state.category);
-    showMessage("Loading " + App.state.month + "...", "success");
-    loadData(App.state.month);
+  App.els.monthButton.addEventListener("click", () => {
+    App.els.monthMenu.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".month-picker")) {
+      App.els.monthMenu.classList.add("hidden");
+    }
   });
 
   App.els.navButtons.forEach(button => {
@@ -134,7 +136,7 @@ function switchView(viewName) {
 }
 
 function loadData(month) {
-  const params = { action: "getAppData" };
+  const params = { action: "getAppData", user: App.state.user || "" };
   if (month) params.month = month;
 
   apiCall(params)
@@ -292,16 +294,25 @@ function createNextMonth() {
 }
 
 function renderMonths() {
-  App.els.monthSelect.innerHTML = "";
+  App.els.monthButton.textContent = App.state.month || "Month";
+  App.els.monthMenu.innerHTML = "";
 
   App.data.availableMonths.forEach(month => {
-    const option = document.createElement("option");
-    option.value = month;
-    option.textContent = month;
-    App.els.monthSelect.appendChild(option);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "month-option" + (month === App.state.month ? " active" : "");
+    button.textContent = month;
+    button.addEventListener("click", () => {
+      App.state.month = month;
+      App.state.category = "SM";
+      localStorage.setItem("budgetTrackerMonth", month);
+      localStorage.setItem("budgetTrackerLastCategory", "SM");
+      App.els.monthMenu.classList.add("hidden");
+      showMessage("Loading " + month + "...", "success");
+      loadData(month);
+    });
+    App.els.monthMenu.appendChild(button);
   });
-
-  App.els.monthSelect.value = App.state.month;
 }
 
 function renderSetupUsers() {
