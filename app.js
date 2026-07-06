@@ -6,6 +6,7 @@ const FAVORITES = [
   { label: "👕 ΡΟΥΧΑ", category: "ΡΟΥΧΑ", full: true }
 ];
 
+const APP_VERSION = "6.1";
 const App = { data:null, state:{month:"", user:"", category:"SM", view:"home"}, els:{}, toastTimer:null };
 
 window.addEventListener("load", init);
@@ -31,13 +32,17 @@ function init(){
 }
 
 function cache(){
-  App.els.monthButton=$("monthButton"); App.els.monthMenu=$("monthMenu");
-  App.els.setupCard=$("setupCard"); App.els.userSelect=$("userSelect"); App.els.continueBtn=$("continueBtn");
-  App.els.mainApp=$("mainApp"); App.els.bottomNav=$("bottomNav");
+  [
+    "monthButton","monthMenu","setupCard","userSelect","continueBtn","mainApp","bottomNav",
+    "miniDashboard","miniRemaining","miniDashboardFill",
+    "dashboardCard","dashRemaining","dashPercent","dashProgressFill","dashIncome","dashExpenses",
+    "userButtons","favoriteButtons","heroCard","previewCategory","previewBalance","previewBudget",
+    "previewSpent","progressFill","categorySelect","amountInput","addBtn","message","undoCard",
+    "lastExpenseText","undoBtn","budgetList","settingsMonth","settingsUser","createMonthBtn","settingsMessage"
+  ].forEach(id => App.els[id] = $(id));
+
   App.els.views={home:$("viewHome"),budget:$("viewBudget"),dashboard:$("viewDashboard"),settings:$("viewSettings")};
   App.els.navButtons=[...document.querySelectorAll(".nav-btn")];
-
-  ["dashboardCard","dashRemaining","dashPercent","dashProgressFill","dashIncome","dashExpenses","userButtons","favoriteButtons","heroCard","previewCategory","previewBalance","previewBudget","previewSpent","progressFill","categorySelect","amountInput","addBtn","message","undoCard","lastExpenseText","undoBtn","budgetList","settingsMonth","settingsUser","createMonthBtn","settingsMessage"].forEach(id=>App.els[id]=$(id));
 }
 
 function bind(){
@@ -49,13 +54,12 @@ function bind(){
   App.els.continueBtn.addEventListener("click", ()=>{
     setUser(App.els.userSelect.value);
     showMain();
-    renderUsers();
     loadData(App.state.month);
   });
 
   App.els.categorySelect.addEventListener("change", ()=>setCategory(App.els.categorySelect.value));
   App.els.addBtn.addEventListener("click", submitExpense);
-  App.els.undoBtn.addEventListener("click", undoLastExpense);
+  App.els.undoBtn.addEventListener("click", smartUndo);
   App.els.createMonthBtn.addEventListener("click", createNextMonth);
 
   document.addEventListener("keydown", e=>{
@@ -70,24 +74,25 @@ function api(params){
   return new Promise((resolve,reject)=>{
     const cb="bt_cb_"+Date.now()+"_"+Math.floor(Math.random()*100000);
     params.callback=cb;
-    const url=API_URL+"?"+new URLSearchParams(params).toString();
-    const s=document.createElement("script");
+
+    const script=document.createElement("script");
+    script.src=API_URL+"?"+new URLSearchParams(params).toString();
 
     window[cb]=data=>{
       delete window[cb];
-      s.remove();
+      script.remove();
+
       if(data && data.success===false) reject(new Error(data.error || "Unknown error"));
       else resolve(data);
     };
 
-    s.onerror=()=>{
+    script.onerror=()=>{
       delete window[cb];
-      s.remove();
+      script.remove();
       reject(new Error("Network error"));
     };
 
-    s.src=url;
-    document.body.appendChild(s);
+    document.body.appendChild(script);
   });
 }
 
@@ -115,13 +120,14 @@ function renderAll(){
   else showSetup();
 
   restoreCategory();
+  renderMiniDashboard();
   renderDashboard();
   renderBudgetList();
   renderSettings();
   renderUsers();
   renderFavorites();
   renderPreview();
-  renderUndo();
+  renderSmartUndo();
   switchView(App.state.view);
 }
 
@@ -137,6 +143,7 @@ function renderMonths(){
     b.addEventListener("click", ()=>{
       App.state.month=month;
       App.state.category="SM";
+      clearSmartUndo();
       localStorage.setItem("budgetTrackerMonth",month);
       localStorage.setItem("budgetTrackerLastCategory","SM");
       App.els.monthMenu.classList.add("hidden");
@@ -195,6 +202,7 @@ function renderUsers(){
     b.textContent="👤 "+u;
     b.addEventListener("click", ()=>{
       setUser(u);
+      clearSmartUndo();
       loadData(App.state.month);
     });
     App.els.userButtons.appendChild(b);
@@ -233,9 +241,20 @@ function restoreCategory(){
   App.els.categorySelect.value=App.state.category;
 }
 
+function renderMiniDashboard(){
+  const d=App.data.dashboard;
+  if(!d) return;
+
+  App.els.miniDashboard.classList.remove("hidden");
+  App.els.miniRemaining.textContent=money(d.remainingAfterSpent);
+  const pct=Math.round(d.spentPercent || 0);
+  App.els.miniDashboardFill.style.width=Math.min(pct,100)+"%";
+}
+
 function renderPreview(){
   const item=App.data.categories.find(c=>c.category===App.state.category);
   if(!item) return;
+
   App.els.heroCard.classList.remove("hidden");
   App.els.previewCategory.textContent=item.category;
   App.els.previewBalance.textContent=money(item.balance);
@@ -253,10 +272,12 @@ function renderPreview(){
 function renderDashboard(){
   const d=App.data.dashboard;
   if(!d) return;
+
   App.els.dashboardCard.classList.remove("hidden");
   App.els.dashRemaining.textContent=money(d.remainingAfterSpent);
   App.els.dashIncome.textContent=money(d.totalIncome);
   App.els.dashExpenses.textContent=money(d.totalSpent);
+
   const pct=Math.round(d.spentPercent || 0);
   App.els.dashPercent.textContent=pct+"%";
   App.els.dashProgressFill.style.width=Math.min(pct,100)+"%";
@@ -283,16 +304,6 @@ function renderSettings(){
   App.els.createMonthBtn.textContent=App.data.nextMonth ? "Create "+App.data.nextMonth : "Create Next Month";
 }
 
-function renderUndo(){
-  const tx=App.data.lastTransaction;
-  if(!tx || !tx.amount){
-    App.els.undoCard.classList.add("hidden");
-    return;
-  }
-  App.els.undoCard.classList.remove("hidden");
-  App.els.lastExpenseText.textContent=money(tx.amount)+" · "+tx.category+" · "+tx.user;
-}
-
 function submitExpense(){
   const user=App.state.user;
   const month=App.state.month;
@@ -310,6 +321,7 @@ function submitExpense(){
       App.els.amountInput.value="";
       App.state.category=category;
       localStorage.setItem("budgetTrackerLastCategory",category);
+      saveSmartUndo({ user, month, category, amount:Number(r.amount), timestamp:Date.now() });
       showMessage("Saved · "+money(r.amount)+" → "+r.category,"success");
       return loadData(month);
     })
@@ -320,17 +332,24 @@ function submitExpense(){
     });
 }
 
-function undoLastExpense(){
-  if(!App.state.user || !App.state.month) return;
-  if(!confirm("Undo last expense for "+App.state.user+"?")) return;
+function smartUndo(){
+  const tx=getSmartUndo();
+
+  if(!tx){
+    renderSmartUndo();
+    return;
+  }
+
+  if(!confirm("Undo "+money(tx.amount)+" from "+tx.category+"?")) return;
 
   App.els.undoBtn.disabled=true;
   App.els.undoBtn.textContent="Undoing...";
 
-  api({action:"undoLastExpense", user:App.state.user, month:App.state.month})
+  api({action:"undoExpense", user:tx.user, month:tx.month, category:tx.category, amount:tx.amount})
     .then(r=>{
+      clearSmartUndo();
       showMessage(r.message,"warning");
-      return loadData(App.state.month);
+      return loadData(tx.month);
     })
     .catch(e=>showMessage(e.message,"error",0))
     .finally(()=>{
@@ -339,8 +358,45 @@ function undoLastExpense(){
     });
 }
 
+function saveSmartUndo(tx){
+  localStorage.setItem("budgetTrackerSmartUndo", JSON.stringify(tx));
+}
+
+function getSmartUndo(){
+  try{
+    const raw=localStorage.getItem("budgetTrackerSmartUndo");
+    if(!raw) return null;
+
+    const tx=JSON.parse(raw);
+    if(!tx || !tx.amount) return null;
+    if(tx.user!==App.state.user) return null;
+    if(tx.month!==App.state.month) return null;
+
+    return tx;
+  }catch(e){
+    return null;
+  }
+}
+
+function clearSmartUndo(){
+  localStorage.removeItem("budgetTrackerSmartUndo");
+}
+
+function renderSmartUndo(){
+  const tx=getSmartUndo();
+
+  if(!tx){
+    App.els.undoCard.classList.add("hidden");
+    return;
+  }
+
+  App.els.undoCard.classList.remove("hidden");
+  App.els.lastExpenseText.textContent=money(tx.amount)+" · "+tx.category+" · "+tx.user;
+}
+
 function createNextMonth(){
   if(!App.data.latestMonth) return;
+
   const target=App.data.nextMonth || "next month";
   if(!confirm("Create "+target+" from "+App.data.latestMonth+"?")) return;
 
@@ -350,6 +406,7 @@ function createNextMonth(){
   api({action:"createNextMonth", fromMonth:App.data.latestMonth})
     .then(r=>{
       App.state.month=r.month;
+      clearSmartUndo();
       localStorage.setItem("budgetTrackerMonth",r.month);
       App.els.settingsMessage.textContent=r.message;
       return loadData(r.month);
@@ -363,6 +420,7 @@ function showMessage(text,type="success",timeout=2200){
   App.els.message.textContent=text;
   App.els.message.className="toast "+type;
   App.els.message.classList.remove("hidden");
+
   if(timeout>0){
     App.toastTimer=setTimeout(()=>App.els.message.classList.add("hidden"),timeout);
   }

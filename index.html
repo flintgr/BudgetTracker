@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <title>Budget Tracker</title>
   <meta name="theme-color" content="#101114">
-  <meta name="apple-mobile-web-app-title" content="Budget Tracker">
+  <meta name="apple-mobile-web-app-title" content="Budget">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div class="phone-app">
     <header class="app-header">
@@ -19,6 +20,7 @@
         <div class="mini-label">Family Budget</div>
         <h1>Budget</h1>
       </div>
+
       <div class="month-picker">
         <button id="monthButton" class="month-button" type="button">Month</button>
         <div id="monthMenu" class="month-menu hidden"></div>
@@ -34,6 +36,16 @@
 
       <section id="mainApp" class="hidden">
         <section id="viewHome" class="view active-view">
+          <section id="miniDashboard" class="mini-dashboard hidden">
+            <div>
+              <span>Available</span>
+              <strong id="miniRemaining"></strong>
+            </div>
+            <div class="mini-dashboard-bar">
+              <div id="miniDashboardFill"></div>
+            </div>
+          </section>
+
           <div id="userButtons" class="user-buttons"></div>
           <div id="favoriteButtons" class="favorite-buttons"></div>
 
@@ -62,7 +74,7 @@
           </section>
 
           <section id="undoCard" class="undo-card hidden">
-            <div><span>Last expense</span><strong id="lastExpenseText"></strong></div>
+            <div><span>Last added on this device</span><strong id="lastExpenseText"></strong></div>
             <button id="undoBtn" type="button">Undo</button>
           </section>
 
@@ -94,6 +106,7 @@
           <section class="screen-card">
             <div class="screen-title">Settings</div>
             <div class="settings-list">
+              <div class="settings-row"><span>Version</span><strong>v6.1</strong></div>
               <div class="settings-row"><span>Active month</span><strong id="settingsMonth"></strong></div>
               <div class="settings-row"><span>Active user</span><strong id="settingsUser"></strong></div>
               <button id="createMonthBtn" class="settings-action" type="button">Create Next Month</button>
@@ -111,6 +124,7 @@
       <button class="nav-btn" data-view="settings" type="button">⚙️<span>Settings</span></button>
     </nav>
   </div>
+
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
