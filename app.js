@@ -6,7 +6,7 @@ const FAVORITES = [
   { label: "👕 ΡΟΥΧΑ", category: "ΡΟΥΧΑ", full: true }
 ];
 
-const APP_VERSION = "6.1";
+const APP_VERSION = "6.2";
 const App = { data:null, state:{month:"", user:"", category:"SM", view:"home"}, els:{}, toastTimer:null };
 
 window.addEventListener("load", init);
@@ -359,12 +359,12 @@ function smartUndo(){
 }
 
 function saveSmartUndo(tx){
-  localStorage.setItem("budgetTrackerSmartUndo", JSON.stringify(tx));
+  localStorage.setItem("familyBudgetSmartUndo", JSON.stringify(tx));
 }
 
 function getSmartUndo(){
   try{
-    const raw=localStorage.getItem("budgetTrackerSmartUndo");
+    const raw=localStorage.getItem("familyBudgetSmartUndo");
     if(!raw) return null;
 
     const tx=JSON.parse(raw);
@@ -379,7 +379,7 @@ function getSmartUndo(){
 }
 
 function clearSmartUndo(){
-  localStorage.removeItem("budgetTrackerSmartUndo");
+  localStorage.removeItem("familyBudgetSmartUndo");
 }
 
 function renderSmartUndo(){

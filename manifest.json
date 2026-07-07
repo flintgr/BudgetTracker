@@ -1,6 +1,6 @@
 {
-  "name": "Budget Tracker",
-  "short_name": "Budget",
+  "name": "Family Budget",
+  "short_name": "Family Budget",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#101114",
