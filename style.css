@@ -17,15 +17,15 @@
 .tx-delete.hidden{display:none!important}
 
 
-/* Sprint 1.1.2 — Applied Dashboard Cards */
-.sprint-dashboard{
+/* Sprint 1.1.3 — Real Dashboard Cards */
+#sprintDashboardCards.sprint-dashboard{
   display:grid!important;
   grid-template-columns:1fr 1fr;
   gap:12px;
-  margin:12px 0 14px;
+  margin:10px 0 12px;
   padding:0 14px;
 }
-.sprint-dashboard .dash-card{
+#sprintDashboardCards .dash-card{
   position:relative;
   overflow:hidden;
   background:rgba(255,255,255,.08);
@@ -34,64 +34,33 @@
   padding:16px 14px 14px;
   min-height:132px;
   box-shadow:0 14px 38px rgba(0,0,0,.18);
-  transition:transform .12s ease;
 }
-.sprint-dashboard .dash-card:active{transform:scale(.985)}
-.sprint-dashboard .dash-accent{
-  position:absolute;
-  left:0;
-  top:0;
-  right:0;
-  height:4px;
+#sprintDashboardCards .dash-accent{
+  position:absolute;left:0;top:0;right:0;height:4px;
 }
-.sprint-dashboard .dash-icon{
-  width:40px;
-  height:40px;
-  display:grid;
-  place-items:center;
-  border-radius:50%;
-  background:rgba(255,255,255,.10);
-  font-size:21px;
-  margin-bottom:11px;
+#sprintDashboardCards .dash-icon{
+  width:40px;height:40px;display:grid;place-items:center;
+  border-radius:50%;background:rgba(255,255,255,.10);
+  font-size:21px;margin-bottom:11px;
 }
-.sprint-dashboard .dash-value{
-  font-size:27px;
-  line-height:1;
-  font-weight:950;
-  letter-spacing:-1px;
-  color:#fff;
-  margin-bottom:8px;
+#sprintDashboardCards .dash-value{
+  font-size:27px;line-height:1;font-weight:950;letter-spacing:-1px;
+  color:#fff;margin-bottom:8px;
 }
-.sprint-dashboard .dash-label{
-  font-size:15px;
-  font-weight:900;
-  margin-bottom:5px;
-}
-.sprint-dashboard .dash-meta{
-  font-size:12px;
-  font-weight:800;
-  color:rgba(255,255,255,.62);
-}
-.sprint-dashboard .dash-income{
-  background:linear-gradient(180deg, rgba(34,197,94,.18), rgba(255,255,255,.055));
-}
-.sprint-dashboard .dash-income .dash-accent{background:#22c55e}
-.sprint-dashboard .dash-income .dash-label{color:#86efac}
-.sprint-dashboard .dash-expenses{
-  background:linear-gradient(180deg, rgba(239,68,68,.18), rgba(255,255,255,.055));
-}
-.sprint-dashboard .dash-expenses .dash-accent{background:#ef4444}
-.sprint-dashboard .dash-expenses .dash-label{color:#fca5a5}
-.sprint-dashboard .dash-available{
-  grid-column:1 / -1;
-  min-height:126px;
-  background:linear-gradient(180deg, rgba(59,130,246,.20), rgba(255,255,255,.06));
-}
-.sprint-dashboard .dash-available .dash-accent{background:#3b82f6}
-.sprint-dashboard .dash-available .dash-label{color:#93c5fd}
-.sprint-dashboard .dash-available .dash-value{font-size:34px}
+#sprintDashboardCards .dash-label{font-size:15px;font-weight:900;margin-bottom:5px}
+#sprintDashboardCards .dash-meta{font-size:12px;font-weight:800;color:rgba(255,255,255,.62)}
+#sprintDashboardCards .dash-income{background:linear-gradient(180deg, rgba(34,197,94,.18), rgba(255,255,255,.055))}
+#sprintDashboardCards .dash-income .dash-accent{background:#22c55e}
+#sprintDashboardCards .dash-income .dash-label{color:#86efac}
+#sprintDashboardCards .dash-expenses{background:linear-gradient(180deg, rgba(239,68,68,.18), rgba(255,255,255,.055))}
+#sprintDashboardCards .dash-expenses .dash-accent{background:#ef4444}
+#sprintDashboardCards .dash-expenses .dash-label{color:#fca5a5}
+#sprintDashboardCards .dash-available{grid-column:1 / -1;min-height:126px;background:linear-gradient(180deg, rgba(59,130,246,.20), rgba(255,255,255,.06))}
+#sprintDashboardCards .dash-available .dash-accent{background:#3b82f6}
+#sprintDashboardCards .dash-available .dash-label{color:#93c5fd}
+#sprintDashboardCards .dash-available .dash-value{font-size:34px}
 @media (min-width:720px){
-  .sprint-dashboard{grid-template-columns:repeat(3,1fr)}
-  .sprint-dashboard .dash-available{grid-column:auto;min-height:132px}
-  .sprint-dashboard .dash-available .dash-value{font-size:27px}
+  #sprintDashboardCards.sprint-dashboard{grid-template-columns:repeat(3,1fr)}
+  #sprintDashboardCards .dash-available{grid-column:auto;min-height:132px}
+  #sprintDashboardCards .dash-available .dash-value{font-size:27px}
 }

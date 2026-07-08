@@ -28,6 +28,30 @@
     </header>
 
     <main class="app-main">
+        <section id="sprintDashboardCards" class="sprint-dashboard">
+          <article class="dash-card dash-income">
+            <div class="dash-accent"></div>
+            <div class="dash-icon">💚</div>
+            <div class="dash-value" id="dashIncomeValue">€0.00</div>
+            <div class="dash-label">Income</div>
+            <div class="dash-meta">Monthly income</div>
+          </article>
+          <article class="dash-card dash-expenses">
+            <div class="dash-accent"></div>
+            <div class="dash-icon">🛍️</div>
+            <div class="dash-value" id="dashExpensesValue">€0.00</div>
+            <div class="dash-label">Expenses</div>
+            <div class="dash-meta" id="dashExpensesMeta">0% of income</div>
+          </article>
+          <article class="dash-card dash-available">
+            <div class="dash-accent"></div>
+            <div class="dash-icon">🏦</div>
+            <div class="dash-value" id="dashAvailableValue">€0.00</div>
+            <div class="dash-label">Available</div>
+            <div class="dash-meta" id="dashAvailableMeta">0% remaining</div>
+          </article>
+        </section>
+
       <section id="setupCard" class="sheet-card hidden">
         <div class="section-title">Choose user</div>
         <select id="userSelect"></select>
@@ -124,8 +148,8 @@
             <div class="screen-title">Settings</div>
             <div class="settings-list">
               <div class="settings-row"><span>App</span><strong>Family Budget</strong></div>
-              <div class="settings-row"><span>Version</span><strong>Sprint 1.1.2</strong></div>
-              <div class="settings-row"><span>Backend</span><strong>Sprint 1.1.2</strong></div>
+              <div class="settings-row"><span>Version</span><strong>Sprint 1.1.3</strong></div>
+              <div class="settings-row"><span>Backend</span><strong>Sprint 1.1.3</strong></div>
               <div class="settings-row"><span>Active month</span><strong id="settingsMonth"></strong></div>
               <div class="settings-row"><span>Active user</span><strong id="settingsUser"></strong></div>
               <button id="createMonthBtn" class="settings-action" type="button">Create Next Month</button>

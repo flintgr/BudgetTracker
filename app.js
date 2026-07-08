@@ -6,7 +6,7 @@ const FAVORITES = [
   { label: "👕 ΡΟΥΧΑ", category: "ΡΟΥΧΑ", full: true }
 ];
 
-const APP_VERSION = "Sprint 1.1.2";
+const APP_VERSION = "Sprint 1.1.3";
 const App = { data:null, state:{month:"", user:"", category:"SM", view:"home"}, els:{}, toastTimer:null };
 
 window.addEventListener("load", init);
@@ -132,7 +132,7 @@ function renderAll(){
   renderFavorites();
   renderPreview();
   renderSmartUndo();
-  applySprintDashboardCards();
+  updateSprintDashboardCards();
   renderHistoryFilters();
   switchView(App.state.view);
 }
@@ -555,8 +555,8 @@ function money(v){ return "€"+Number(v||0).toFixed(2); }
 function esc(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
 
 
-/* Sprint 1.1.2 — Applied Dashboard Cards */
-function applySprintDashboardCards(){
+/* Sprint 1.1.3 — Real Dashboard Cards Patch */
+function updateSprintDashboardCards(){
   if(!window.App || !App.data || !App.data.dashboard) return;
 
   const d = App.data.dashboard || {};
@@ -567,58 +567,18 @@ function applySprintDashboardCards(){
   const expensesPct = income > 0 ? Math.min(Math.round((expenses / income) * 100), 999) : 0;
   const availablePct = income > 0 ? Math.max(Math.round((available / income) * 100), 0) : 0;
 
-  const html = `
-    <section id="sprintDashboardCards" class="sprint-dashboard">
-      <article class="dash-card dash-income">
-        <div class="dash-accent"></div>
-        <div class="dash-icon">💚</div>
-        <div class="dash-value">${money(income)}</div>
-        <div class="dash-label">Income</div>
-        <div class="dash-meta">Monthly income</div>
-      </article>
+  const incomeEl = document.getElementById("dashIncomeValue");
+  const expensesEl = document.getElementById("dashExpensesValue");
+  const availableEl = document.getElementById("dashAvailableValue");
+  const expensesMeta = document.getElementById("dashExpensesMeta");
+  const availableMeta = document.getElementById("dashAvailableMeta");
 
-      <article class="dash-card dash-expenses">
-        <div class="dash-accent"></div>
-        <div class="dash-icon">🛍️</div>
-        <div class="dash-value">${money(expenses)}</div>
-        <div class="dash-label">Expenses</div>
-        <div class="dash-meta">${expensesPct}% of income</div>
-      </article>
-
-      <article class="dash-card dash-available">
-        <div class="dash-accent"></div>
-        <div class="dash-icon">🏦</div>
-        <div class="dash-value">${money(available)}</div>
-        <div class="dash-label">Available</div>
-        <div class="dash-meta">${availablePct}% remaining</div>
-      </article>
-    </section>
-  `;
-
-  const existing = document.getElementById("sprintDashboardCards");
-  if(existing){
-    existing.outerHTML = html;
-    return;
-  }
-
-  // The current v6.6 home has a single summary card at the top.
-  // We replace the first large card that contains the text "REMAINING THIS MONTH".
-  const candidates = Array.from(document.querySelectorAll("section, .screen-card, .card, div"));
-  const oldSummary = candidates.find(el => {
-    const txt = (el.textContent || "").toUpperCase();
-    return txt.includes("REMAINING THIS MONTH");
-  });
-
-  if(oldSummary){
-    oldSummary.outerHTML = html;
-    return;
-  }
-
-  // Fallback: insert after the header area.
-  const main = document.querySelector("main") || document.body;
-  main.insertAdjacentHTML("afterbegin", html);
+  if(incomeEl) incomeEl.textContent = money(income);
+  if(expensesEl) expensesEl.textContent = money(expenses);
+  if(availableEl) availableEl.textContent = money(available);
+  if(expensesMeta) expensesMeta.textContent = expensesPct + "% of income";
+  if(availableMeta) availableMeta.textContent = availablePct + "% remaining";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(applySprintDashboardCards, 500);
-});
+
+setInterval(updateSprintDashboardCards, 1000);
