@@ -6,7 +6,7 @@ const FAVORITES = [
   { label: "👕 ΡΟΥΧΑ", category: "ΡΟΥΧΑ", full: true }
 ];
 
-const APP_VERSION = "6.2";
+const APP_VERSION = "6.5";
 const App = { data:null, state:{month:"", user:"", category:"SM", view:"home"}, els:{}, toastTimer:null };
 
 window.addEventListener("load", init);
@@ -41,7 +41,7 @@ function cache(){
     "lastExpenseText","undoBtn","budgetList","settingsMonth","settingsUser","createMonthBtn","settingsMessage"
   ].forEach(id => App.els[id] = $(id));
 
-  App.els.views={home:$("viewHome"),budget:$("viewBudget"),dashboard:$("viewDashboard"),settings:$("viewSettings")};
+  App.els.views={home:$("viewHome"),budget:$("viewBudget"),dashboard:$("viewDashboard"),transactions:$("viewTransactions"),settings:$("viewSettings")};
   App.els.navButtons=[...document.querySelectorAll(".nav-btn")];
 }
 
@@ -61,6 +61,10 @@ function bind(){
   App.els.addBtn.addEventListener("click", submitExpense);
   App.els.undoBtn.addEventListener("click", smartUndo);
   App.els.createMonthBtn.addEventListener("click", createNextMonth);
+  if(App.els.refreshTransactionsBtn) App.els.refreshTransactionsBtn.addEventListener("click", loadTransactions);
+  if(App.els.historyMonthFilter) App.els.historyMonthFilter.addEventListener("change", loadTransactions);
+  if(App.els.historyUserFilter) App.els.historyUserFilter.addEventListener("change", loadTransactions);
+  if(App.els.refreshTransactionsBtn) App.els.refreshTransactionsBtn.addEventListener("click", loadTransactions);
 
   document.addEventListener("keydown", e=>{
     if(e.key==="Enter" && document.activeElement===App.els.amountInput){
@@ -128,6 +132,7 @@ function renderAll(){
   renderFavorites();
   renderPreview();
   renderSmartUndo();
+  renderHistoryFilters();
   switchView(App.state.view);
 }
 
@@ -155,6 +160,8 @@ function renderMonths(){
 
 function switchView(view){
   App.state.view=view;
+  if(view==="transactions") setTimeout(loadTransactions, 50);
+  if(view==="transactions") setTimeout(loadTransactions, 50);
   Object.entries(App.els.views).forEach(([name,el])=>el.classList.toggle("active-view", name===view));
   App.els.navButtons.forEach(b=>b.classList.toggle("active", b.dataset.view===view));
 }
@@ -393,6 +400,107 @@ function renderSmartUndo(){
   App.els.undoCard.classList.remove("hidden");
   App.els.lastExpenseText.textContent=money(tx.amount)+" · "+tx.category+" · "+tx.user;
 }
+
+
+
+function renderHistoryFilters(){
+  if(!App.data) return;
+  if(App.els.historyMonthFilter){
+    const currentValue = App.els.historyMonthFilter.value || "current";
+    App.els.historyMonthFilter.innerHTML = "";
+    addOption(App.els.historyMonthFilter, "current", "Current Month");
+    addOption(App.els.historyMonthFilter, "", "All Months");
+    (App.data.availableMonths || []).forEach(m => addOption(App.els.historyMonthFilter, m, m));
+    App.els.historyMonthFilter.value = currentValue;
+  }
+  if(App.els.historyUserFilter){
+    const currentValue = App.els.historyUserFilter.value || "current";
+    App.els.historyUserFilter.innerHTML = "";
+    addOption(App.els.historyUserFilter, "current", "Current User");
+    addOption(App.els.historyUserFilter, "", "All Users");
+    (App.data.users || []).forEach(u => addOption(App.els.historyUserFilter, u, u));
+    App.els.historyUserFilter.value = currentValue;
+  }
+}
+function addOption(select, value, label){
+  const option = document.createElement("option");
+  option.value = value;
+  option.textContent = label;
+  select.appendChild(option);
+}
+function getHistoryFilters(){
+  const monthValue = App.els.historyMonthFilter ? App.els.historyMonthFilter.value : "current";
+  const userValue = App.els.historyUserFilter ? App.els.historyUserFilter.value : "current";
+  return { month: monthValue === "current" ? App.state.month : monthValue, user: userValue === "current" ? App.state.user : userValue };
+}
+function loadTransactions(){
+  const list = document.getElementById("transactionsList");
+  const status = document.getElementById("transactionsStatus");
+  if(!list || !status) return;
+  const filters = getHistoryFilters();
+  status.textContent = "Loading history...";
+  list.innerHTML = '<div class="empty-state">Loading...</div>';
+  api({ action:"getTransactions", month:filters.month || "", user:filters.user || "" })
+    .then(r => {
+      const items = r.transactions || [];
+      updateHistorySummary(items);
+      status.textContent = "Backend v" + (r.backendVersion || "?") + " · " + items.length + " transactions";
+      renderTransactions(items);
+    })
+    .catch(e => {
+      updateHistorySummary([]);
+      status.textContent = "Error: " + e.message;
+      list.innerHTML = '<div class="empty-state">History could not load.</div>';
+    });
+}
+function updateHistorySummary(items){
+  const count = items.length;
+  const total = items.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+  if(App.els.historyCount) App.els.historyCount.textContent = String(count);
+  if(App.els.historyTotal) App.els.historyTotal.textContent = money(total);
+}
+function renderTransactions(items){
+  const list = document.getElementById("transactionsList");
+  if(!list) return;
+  list.innerHTML = "";
+  if(!items.length){
+    list.innerHTML = '<div class="empty-state">No transactions for the selected filters.</div>';
+    return;
+  }
+  items.forEach(tx => {
+    const row = document.createElement("div");
+    row.className = "tx-row";
+    row.innerHTML = `<div class="tx-main"><strong>${categoryIcon(tx.category)} ${esc(tx.category)}</strong><span>👤 ${esc(tx.user)}<br>📅 ${formatDate(tx.date)} · ${esc(tx.month)}</span></div><div class="tx-side"><strong>${money(tx.amount)}</strong><button class="tx-delete" type="button">Delete</button></div>`;
+    row.querySelector(".tx-delete").addEventListener("click", () => deleteTransaction(tx));
+    list.appendChild(row);
+  });
+}
+function deleteTransaction(tx){
+  if(!confirm("Delete " + money(tx.amount) + " from " + tx.category + "?")) return;
+  api({ action:"deleteTransaction", id:tx.id })
+    .then(r => {
+      clearSmartUndo();
+      showMessage(r.message, "warning");
+      return loadData(App.state.month).then(loadTransactions);
+    })
+    .catch(e => showMessage(e.message, "error", 0));
+}
+function categoryIcon(category){
+  const c = String(category || "").toUpperCase();
+  if(c.includes("SM")) return "🛒";
+  if(c.includes("DELIVERY")) return "🍔";
+  if(c.includes("ΡΟΥΧ") || c.includes("CLOTH")) return "👕";
+  if(c.includes("WORK")) return "💼";
+  if(c.includes("CAR") || c.includes("ΒΕΝΖ")) return "🚗";
+  return "🧾";
+}
+function formatDate(value){
+  if(!value) return "";
+  const d = new Date(value);
+  if(isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString("el-GR", { day:"2-digit", month:"short" }) + " " + d.toLocaleTimeString("el-GR", { hour:"2-digit", minute:"2-digit" });
+}
+window.loadTransactions = loadTransactions;
 
 function createNextMonth(){
   if(!App.data.latestMonth) return;

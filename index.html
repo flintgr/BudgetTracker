@@ -102,13 +102,30 @@
           </section>
         </section>
 
+        <section id="viewTransactions" class="view">
+          <section class="screen-card">
+            <div class="screen-title">History</div>
+            <div class="history-summary">
+              <div><span>Transactions</span><strong id="historyCount">0</strong></div>
+              <div><span>Total</span><strong id="historyTotal">€0.00</strong></div>
+            </div>
+            <div class="history-filters">
+              <label><span>Month</span><select id="historyMonthFilter"><option value="current">Current Month</option><option value="">All Months</option></select></label>
+              <label><span>User</span><select id="historyUserFilter"><option value="current">Current User</option><option value="">All Users</option></select></label>
+            </div>
+            <button id="refreshTransactionsBtn" class="secondary-action" type="button">Refresh History</button>
+            <div id="transactionsStatus" class="settings-note">Shows filtered transactions.</div>
+            <div id="transactionsList" class="transactions-list"></div>
+          </section>
+        </section>
+
         <section id="viewSettings" class="view">
           <section class="screen-card">
             <div class="screen-title">Settings</div>
             <div class="settings-list">
               <div class="settings-row"><span>App</span><strong>Family Budget</strong></div>
-              <div class="settings-row"><span>Version</span><strong>v6.2</strong></div>
-              <div class="settings-row"><span>Backend</span><strong>v6.2</strong></div>
+              <div class="settings-row"><span>Version</span><strong>v6.5</strong></div>
+              <div class="settings-row"><span>Backend</span><strong>v6.5</strong></div>
               <div class="settings-row"><span>Active month</span><strong id="settingsMonth"></strong></div>
               <div class="settings-row"><span>Active user</span><strong id="settingsUser"></strong></div>
               <button id="createMonthBtn" class="settings-action" type="button">Create Next Month</button>
@@ -123,6 +140,7 @@
       <button class="nav-btn active" data-view="home" type="button">🏠<span>Home</span></button>
       <button class="nav-btn" data-view="budget" type="button">💳<span>Budget</span></button>
       <button class="nav-btn" data-view="dashboard" type="button">📊<span>Dashboard</span></button>
+      <button class="nav-btn" data-view="transactions" type="button">🧾<span>History</span></button>
       <button class="nav-btn" data-view="settings" type="button">⚙️<span>Settings</span></button>
     </nav>
   </div>
