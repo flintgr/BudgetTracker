@@ -17,9 +17,9 @@
 .tx-delete.hidden{display:none!important}
 
 
-/* Sprint 1.1 — Dashboard Cards */
+/* Sprint 1.1.1 — Dashboard Cards Safe Fix */
 .sprint-dashboard{
-  display:grid;
+  display:grid!important;
   grid-template-columns:1fr 1fr;
   gap:12px;
   margin:14px 0 18px;
@@ -33,14 +33,15 @@
   padding:16px 14px 14px;
   min-height:142px;
   box-shadow:0 14px 38px rgba(0,0,0,.18);
-  transition:transform .12s ease, border-color .18s ease;
+  transition:transform .12s ease;
 }
 .sprint-dashboard .dash-card:active{transform:scale(.985)}
 .sprint-dashboard .dash-accent{
   position:absolute;
-  left:0;top:0;right:0;
+  left:0;
+  top:0;
+  right:0;
   height:4px;
-  opacity:.95;
 }
 .sprint-dashboard .dash-icon{
   width:42px;
