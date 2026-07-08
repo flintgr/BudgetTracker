@@ -17,361 +17,193 @@
 .tx-delete.hidden{display:none!important}
 
 
-/* Sprint 1.2 — Home Redesign */
-body{
-  background:#f6f7fb;
-  color:#111827;
-}
-.phone-app{
-  background:linear-gradient(180deg,#ffffff 0%,#f7f8fc 62%,#ffffff 100%);
-  color:#111827;
-}
-.app-header{
-  background:rgba(255,255,255,.92);
-  border-bottom:0;
-  color:#111827;
-}
-.app-header h1{
-  font-size:30px;
-  color:#101828;
-  letter-spacing:-.9px;
-}
-.mini-label{
-  color:#6b7280;
-  text-shadow:none;
-}
-.month-button{
-  background:#f4f5f8;
-  border:1px solid #dde1ea;
-  color:#111827;
-  box-shadow:none;
-}
-.month-menu{
-  background:#ffffff;
-  color:#111827;
-  border:1px solid #e5e7eb;
-  box-shadow:0 18px 50px rgba(15,23,42,.18);
-}
-.month-option{
-  color:#111827;
-}
-.home-summary{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  padding:0 14px;
-  margin:12px 0 20px;
-}
-.home-money-card{
-  position:relative;
-  overflow:hidden;
-  border-radius:22px;
-  padding:16px 14px 14px;
-  min-height:136px;
-  border:1px solid #e5e7eb;
-  box-shadow:0 14px 34px rgba(15,23,42,.07);
-}
-.home-money-card .card-top-line{
-  position:absolute;
-  left:0;top:0;right:0;height:4px;
-}
-.money-icon{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  display:grid;
-  place-items:center;
-  background:rgba(255,255,255,.82);
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);
-  font-size:22px;
-  margin-bottom:12px;
-}
-.money-value{
-  font-size:28px;
-  line-height:1;
-  font-weight:950;
-  letter-spacing:-1px;
-  margin-bottom:8px;
-  color:#0f172a;
-}
-.money-label{
-  font-size:15px;
-  font-weight:900;
-  margin-bottom:4px;
-}
-.money-meta{
-  font-size:12px;
-  font-weight:800;
-  color:#64748b;
-}
-.income-card{
-  background:linear-gradient(180deg,#ecfdf3 0%,#ffffff 100%);
-}
-.income-card .card-top-line{background:#16a34a}
-.income-card .money-label{color:#14833b}
-.expenses-card{
-  background:linear-gradient(180deg,#fff1f2 0%,#ffffff 100%);
-}
-.expenses-card .card-top-line{background:#ef4444}
-.expenses-card .money-label{color:#dc2626}
-.available-card{
-  grid-column:1 / -1;
-  background:linear-gradient(180deg,#eff6ff 0%,#ffffff 100%);
-}
-.available-card .card-top-line{background:#2563eb}
-.available-card .money-label{color:#2563eb}
-.available-card .money-value{font-size:34px}
+/* Sprint 1.2.1 — Safe Restore / Visual Polish
+   Safe CSS-only layer over v6.6. No HTML replacement. */
 
-.quick-section{
-  padding:0 14px;
-  margin-bottom:18px;
+:root{
+  --fb-bg:#f6f7fb;
+  --fb-card:#ffffff;
+  --fb-text:#111827;
+  --fb-muted:#64748b;
+  --fb-border:#e5e7eb;
+  --fb-green:#16a34a;
+  --fb-red:#ef4444;
+  --fb-blue:#2563eb;
+  --fb-purple:#6d28d9;
 }
-.section-row-title{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  font-size:22px;
-  font-weight:950;
-  margin-bottom:12px;
-  color:#111827;
+
+/* Light premium shell */
+body{
+  background:var(--fb-bg)!important;
+  color:var(--fb-text)!important;
 }
-.star-icon{margin-right:8px}
-.small-edit-btn{
-  width:auto;
-  min-height:34px;
-  padding:0 10px;
-  border-radius:12px;
-  background:#f4f2ff;
-  color:#6d28d9;
-  border:0;
-  box-shadow:none;
-  font-size:16px;
+
+.app-header{
+  background:rgba(255,255,255,.94)!important;
+  color:var(--fb-text)!important;
+  border-bottom:1px solid rgba(15,23,42,.05)!important;
 }
-.quick-category-row{
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  padding-bottom:7px;
-  scrollbar-width:none;
+
+.app-header h1{
+  color:var(--fb-text)!important;
+  letter-spacing:-.8px!important;
 }
-.quick-category-row::-webkit-scrollbar{display:none}
-.quick-category-chip{
-  flex:0 0 86px;
-  min-height:96px;
-  border-radius:18px;
-  border:1px solid #dce2ea;
-  background:#fff;
-  color:#111827;
-  box-shadow:0 10px 26px rgba(15,23,42,.06);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  padding:10px;
-  font-size:13px;
+
+.mini-label{
+  color:var(--fb-muted)!important;
+  text-shadow:none!important;
 }
-.quick-category-chip span{
-  font-size:27px;
-  line-height:1;
-}
-.quick-category-chip strong{
-  font-size:13px;
-  font-weight:850;
-  white-space:nowrap;
-}
-.quick-category-chip.active{
-  border-color:#16a34a;
-  background:#ecfdf3;
-  color:#087531;
-  box-shadow:0 0 0 2px rgba(22,163,74,.12),0 10px 26px rgba(15,23,42,.06);
-}
-.quick-category-chip.wide{flex-basis:120px}
-.more-chip span{
-  color:#64748b;
-  letter-spacing:2px;
-}
-.selected-mini-card{
-  margin:0 14px 14px;
-  background:#ffffff;
-  border:1px solid #e5e7eb;
-  border-radius:22px;
-  padding:14px;
-  box-shadow:0 12px 28px rgba(15,23,42,.06);
-  color:#111827;
-}
-.selected-mini-card .hero-top,
-.selected-mini-card{
-  color:#111827;
-}
-.selected-mini-card span,
-.selected-stats span{
-  color:#64748b;
-  font-size:12px;
-  font-weight:850;
-}
-.selected-mini-card strong{
-  color:#111827;
-}
-.amount-panel{
-  margin:0 14px 14px;
-  background:#ffffff;
-  border:1px solid #e5e7eb;
-  border-radius:22px;
-  box-shadow:0 12px 28px rgba(15,23,42,.06);
-  padding:14px;
-}
-.amount-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:10px;
-}
-.amount-header label{
-  font-size:18px;
-  font-weight:950;
-  color:#111827;
-}
-.amount-header span{
-  background:#f3f4f6;
-  border:1px solid #e5e7eb;
-  border-radius:999px;
-  padding:7px 12px;
-  font-weight:850;
-}
-.amount-input-wrap{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  border:1px solid #dce2ea;
-  border-radius:15px;
-  padding:0 14px;
-  height:58px;
-  margin-bottom:12px;
-  background:#fff;
-}
-.amount-input-wrap span{
-  color:#64748b;
-  font-size:24px;
-  font-weight:850;
-}
-.amount-input-wrap input{
-  border:0!important;
-  background:transparent!important;
+
+.month-button{
+  background:#f4f5f8!important;
+  color:var(--fb-text)!important;
+  border:1px solid #dde1ea!important;
   box-shadow:none!important;
-  padding:0!important;
-  color:#111827!important;
-  font-size:30px!important;
-  min-height:auto!important;
 }
-.amount-input-wrap input:focus{outline:none}
-.amount-panel #addBtn{
-  min-height:56px;
-  border-radius:15px;
-  background:linear-gradient(135deg,#11a052,#087a3b);
-  box-shadow:0 14px 28px rgba(8,122,59,.22);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  font-size:19px;
+
+/* Card styling */
+.screen-card,
+#heroCard,
+.input-panel,
+.undo-card{
+  background:var(--fb-card)!important;
+  color:var(--fb-text)!important;
+  border:1px solid var(--fb-border)!important;
+  border-radius:22px!important;
+  box-shadow:0 14px 34px rgba(15,23,42,.07)!important;
 }
-.amount-panel #addBtn span{
-  width:28px;
-  height:28px;
-  border-radius:50%;
-  background:#fff;
-  color:#0b8a43;
-  display:grid;
-  place-items:center;
-  font-weight:950;
+
+.screen-card strong,
+#heroCard strong,
+.input-panel strong{
+  color:var(--fb-text)!important;
 }
-.advanced-panel{
-  margin:0 14px 90px;
-  background:#ffffff;
-  border:1px solid #e5e7eb;
-  border-radius:20px;
-  box-shadow:0 12px 28px rgba(15,23,42,.05);
-  overflow:hidden;
+
+.screen-card span,
+#heroCard span,
+.input-panel span,
+.settings-note{
+  color:var(--fb-muted)!important;
 }
-.advanced-panel summary{
-  cursor:pointer;
-  list-style:none;
-  padding:16px;
-  font-weight:950;
-  color:#6d28d9;
-  background:#faf7ff;
+
+/* Top remaining card polish */
+#miniDashboard,
+.mini-dashboard,
+.screen-card:first-of-type{
+  background:linear-gradient(180deg,#eff6ff 0%,#ffffff 100%)!important;
+  border:1px solid #bfdbfe!important;
 }
-.advanced-panel summary::-webkit-details-marker{display:none}
-.advanced-content{
-  padding:12px 14px 16px;
-  display:grid;
-  gap:12px;
+
+#miniRemaining,
+#miniDashboard strong,
+.mini-dashboard strong{
+  color:#0f172a!important;
 }
-.advanced-row{
-  display:grid;
-  gap:8px;
+
+#miniDashboardFill,
+.mini-dashboard-bar > div{
+  background:linear-gradient(90deg,#22c55e,#16a34a)!important;
 }
-.advanced-row>span,
-.advanced-content label span{
-  color:#64748b;
-  font-weight:850;
-  font-size:13px;
+
+/* User/category buttons as softer chips */
+.user-button,
+.favorite-button{
+  background:#ffffff!important;
+  color:var(--fb-text)!important;
+  border:1px solid var(--fb-border)!important;
+  box-shadow:0 10px 24px rgba(15,23,42,.05)!important;
+  border-radius:18px!important;
 }
-.advanced-content .user-buttons{
-  grid-template-columns:1fr 1fr;
+
+.user-button.active,
+.favorite-button.active{
+  background:#ecfdf3!important;
+  color:#087531!important;
+  border-color:var(--fb-green)!important;
+  box-shadow:0 0 0 2px rgba(22,163,74,.12),0 10px 24px rgba(15,23,42,.05)!important;
 }
-.advanced-content .user-button,
-.advanced-content .favorite-button{
-  background:#f9fafb;
-  color:#111827;
-  border:1px solid #e5e7eb;
-  box-shadow:none;
+
+/* Selected category card */
+#heroCard{
+  background:#ffffff!important;
 }
-.advanced-content .user-button.active{
-  background:#ecfdf3;
-  color:#087531;
-  border-color:#16a34a;
+
+.progress-track{
+  background:#e5e7eb!important;
 }
-.advanced-content select{
-  background:#fff;
-  color:#111827;
-  border:1px solid #dce2ea;
-  box-shadow:none;
+
+.progress-fill{
+  background:linear-gradient(90deg,#22c55e,#16a34a)!important;
 }
-.toast{
-  color:#111827;
+
+/* Form area */
+label,
+.input-panel label{
+  color:var(--fb-muted)!important;
 }
-.bottom-nav{
-  background:rgba(255,255,255,.92);
-  border-top:1px solid #e5e7eb;
+
+select,
+input{
+  background:#ffffff!important;
+  color:var(--fb-text)!important;
+  border:1px solid #dce2ea!important;
+  box-shadow:none!important;
 }
-.nav-btn{
-  color:#64748b;
+
+input::placeholder{
+  color:#9ca3af!important;
 }
-.nav-btn.active{
-  background:#ede9fe;
-  color:#6d28d9;
-}
-.visually-hidden{
-  position:absolute!important;
-  width:1px!important;
-  height:1px!important;
-  padding:0!important;
-  margin:-1px!important;
-  overflow:hidden!important;
-  clip:rect(0,0,0,0)!important;
-  white-space:nowrap!important;
+
+#addBtn{
+  background:linear-gradient(135deg,#11a052,#087a3b)!important;
+  color:#ffffff!important;
   border:0!important;
+  box-shadow:0 14px 28px rgba(8,122,59,.22)!important;
+  border-radius:16px!important;
 }
-@media (min-width:720px){
-  .home-summary{
-    grid-template-columns:repeat(3,1fr);
-  }
-  .available-card{
-    grid-column:auto;
-  }
-  .available-card .money-value{
-    font-size:28px;
+
+/* Bottom nav */
+.bottom-nav{
+  background:rgba(255,255,255,.94)!important;
+  border-top:1px solid var(--fb-border)!important;
+}
+
+.nav-btn{
+  color:var(--fb-muted)!important;
+}
+
+.nav-btn.active{
+  background:#ede9fe!important;
+  color:var(--fb-purple)!important;
+}
+
+/* History and settings compatibility */
+.tx-row,
+.history-summary div,
+.settings-row{
+  background:#ffffff!important;
+  color:var(--fb-text)!important;
+  border:1px solid var(--fb-border)!important;
+}
+
+.tx-main strong,
+.tx-side strong,
+.settings-row strong{
+  color:var(--fb-text)!important;
+}
+
+.tx-main span,
+.settings-row span{
+  color:var(--fb-muted)!important;
+}
+
+/* Mobile breathing room */
+.view{
+  padding-bottom:88px!important;
+}
+
+@media (max-width:520px){
+  .app-header h1{
+    font-size:30px!important;
   }
 }

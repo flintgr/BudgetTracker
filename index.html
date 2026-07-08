@@ -18,7 +18,7 @@
     <header class="app-header">
       <div>
         <div class="mini-label">Family Budget</div>
-        <h1>Family Budget</h1>
+        <h1>Family</h1>
       </div>
 
       <div class="month-picker">
@@ -35,82 +35,43 @@
       </section>
 
       <section id="mainApp" class="hidden">
-        <section id="viewHome" class="view active-view home-redesign">
-          <section id="miniDashboard" class="home-summary">
-            <article class="home-money-card income-card">
-              <div class="card-top-line"></div>
-              <div class="money-icon">💚</div>
-              <div id="homeIncomeValue" class="money-value">€0.00</div>
-              <div class="money-label">Income</div>
-              <div class="money-meta">Monthly income</div>
-            </article>
-
-            <article class="home-money-card expenses-card">
-              <div class="card-top-line"></div>
-              <div class="money-icon">🛍️</div>
-              <div id="homeExpensesValue" class="money-value">€0.00</div>
-              <div class="money-label">Expenses</div>
-              <div id="homeExpensesMeta" class="money-meta">0% of income</div>
-            </article>
-
-            <article class="home-money-card available-card">
-              <div class="card-top-line"></div>
-              <div class="money-icon">🏦</div>
-              <div id="homeAvailableValue" class="money-value">€0.00</div>
-              <div class="money-label">Available</div>
-              <div id="homeAvailableMeta" class="money-meta">0% remaining</div>
-            </article>
-
-            <strong id="miniRemaining" class="visually-hidden"></strong>
-            <div class="visually-hidden mini-dashboard-bar"><div id="miniDashboardFill"></div></div>
+        <section id="viewHome" class="view active-view">
+          <section id="miniDashboard" class="mini-dashboard hidden">
+            <div>
+              <span>Remaining this month</span>
+              <strong id="miniRemaining"></strong>
+            </div>
+            <div class="mini-dashboard-bar">
+              <div id="miniDashboardFill"></div>
+            </div>
           </section>
 
-          <section class="quick-section">
-            <div class="section-row-title">
-              <div><span class="star-icon">⭐</span>Quick Categories</div>
-              <button class="small-edit-btn" type="button">✎</button>
-            </div>
-            <div id="favoriteButtons" class="quick-category-row"></div>
-          </section>
+          <div id="userButtons" class="user-buttons"></div>
+          <div id="favoriteButtons" class="favorite-buttons"></div>
 
-          <section id="heroCard" class="selected-mini-card hidden">
-            <div>
-              <span>Selected</span>
-              <strong id="previewCategory"></strong>
-            </div>
-            <div>
-              <span>Balance</span>
-              <strong id="previewBalance"></strong>
+          <section id="heroCard" class="hero-card hidden">
+            <div class="hero-top">
+              <div>
+                <div class="mini-label">Selected</div>
+                <div id="previewCategory" class="hero-category"></div>
+              </div>
+              <div class="hero-balance">
+                <div class="mini-label">Balance</div>
+                <div id="previewBalance" class="balance-amount"></div>
+              </div>
             </div>
             <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
-            <div class="selected-stats">
+            <div class="stats-grid">
               <div><span>Budget</span><strong id="previewBudget"></strong></div>
               <div><span>Spent</span><strong id="previewSpent"></strong></div>
             </div>
           </section>
 
-          <section class="input-panel amount-panel">
-            <div class="amount-header">
-              <label for="amountInput">Amount</label>
-              <span>EUR</span>
-            </div>
-            <div class="amount-input-wrap">
-              <span>€</span>
-              <input id="amountInput" type="number" inputmode="decimal" placeholder="0,00">
-            </div>
-            <button id="addBtn" type="button"><span>＋</span>Add Expense</button>
+          <section class="input-panel">
+            <label><span>Category</span><select id="categorySelect"></select></label>
+            <label><span>Amount</span><input id="amountInput" type="number" inputmode="decimal" placeholder="0.00"></label>
+            <button id="addBtn" type="button">Add Expense</button>
           </section>
-
-          <details class="advanced-panel">
-            <summary>Advanced</summary>
-            <div class="advanced-content">
-              <div class="advanced-row">
-                <span>👤 User</span>
-                <div id="userButtons" class="user-buttons"></div>
-              </div>
-              <label><span>Category</span><select id="categorySelect"></select></label>
-            </div>
-          </details>
 
           <section id="undoCard" class="undo-card hidden">
             <div><span>Last added on this device</span><strong id="lastExpenseText"></strong></div>
@@ -163,8 +124,8 @@
             <div class="screen-title">Settings</div>
             <div class="settings-list">
               <div class="settings-row"><span>App</span><strong>Family Budget</strong></div>
-              <div class="settings-row"><span>Version</span><strong>Sprint 1.2</strong></div>
-              <div class="settings-row"><span>Backend</span><strong>Sprint 1.2</strong></div>
+              <div class="settings-row"><span>Version</span><strong>Sprint 1.2.1</strong></div>
+              <div class="settings-row"><span>Backend</span><strong>Sprint 1.2.1</strong></div>
               <div class="settings-row"><span>Active month</span><strong id="settingsMonth"></strong></div>
               <div class="settings-row"><span>Active user</span><strong id="settingsUser"></strong></div>
               <button id="createMonthBtn" class="settings-action" type="button">Create Next Month</button>
