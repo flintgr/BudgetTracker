@@ -15,3 +15,81 @@
 .tx-action.undo{background:rgba(245,158,11,.22);color:#ffdca0}
 .tx-action.deleted{background:rgba(239,68,68,.22);color:#ffb3b3}
 .tx-delete.hidden{display:none!important}
+
+
+/* Sprint 1.1 — Dashboard Cards */
+.sprint-dashboard{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:14px 0 18px;
+}
+.sprint-dashboard .dash-card{
+  position:relative;
+  overflow:hidden;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:22px;
+  padding:16px 14px 14px;
+  min-height:142px;
+  box-shadow:0 14px 38px rgba(0,0,0,.18);
+  transition:transform .12s ease, border-color .18s ease;
+}
+.sprint-dashboard .dash-card:active{transform:scale(.985)}
+.sprint-dashboard .dash-accent{
+  position:absolute;
+  left:0;top:0;right:0;
+  height:4px;
+  opacity:.95;
+}
+.sprint-dashboard .dash-icon{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:rgba(255,255,255,.10);
+  font-size:22px;
+  margin-bottom:12px;
+}
+.sprint-dashboard .dash-value{
+  font-size:28px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:-1px;
+  color:#fff;
+  margin-bottom:8px;
+}
+.sprint-dashboard .dash-label{
+  font-size:15px;
+  font-weight:900;
+  margin-bottom:5px;
+}
+.sprint-dashboard .dash-meta{
+  font-size:12px;
+  font-weight:800;
+  color:rgba(255,255,255,.62);
+}
+.sprint-dashboard .dash-income{
+  background:linear-gradient(180deg, rgba(34,197,94,.18), rgba(255,255,255,.055));
+}
+.sprint-dashboard .dash-income .dash-accent{background:#22c55e}
+.sprint-dashboard .dash-income .dash-label{color:#86efac}
+.sprint-dashboard .dash-expenses{
+  background:linear-gradient(180deg, rgba(239,68,68,.18), rgba(255,255,255,.055));
+}
+.sprint-dashboard .dash-expenses .dash-accent{background:#ef4444}
+.sprint-dashboard .dash-expenses .dash-label{color:#fca5a5}
+.sprint-dashboard .dash-available{
+  grid-column:1 / -1;
+  min-height:132px;
+  background:linear-gradient(180deg, rgba(59,130,246,.20), rgba(255,255,255,.06));
+}
+.sprint-dashboard .dash-available .dash-accent{background:#3b82f6}
+.sprint-dashboard .dash-available .dash-label{color:#93c5fd}
+.sprint-dashboard .dash-available .dash-value{font-size:34px}
+@media (min-width:720px){
+  .sprint-dashboard{grid-template-columns:repeat(3,1fr)}
+  .sprint-dashboard .dash-available{grid-column:auto;min-height:142px}
+  .sprint-dashboard .dash-available .dash-value{font-size:28px}
+}

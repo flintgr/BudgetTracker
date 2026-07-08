@@ -6,7 +6,7 @@ const FAVORITES = [
   { label: "👕 ΡΟΥΧΑ", category: "ΡΟΥΧΑ", full: true }
 ];
 
-const APP_VERSION = "6.6";
+const APP_VERSION = "Sprint 1.1";
 const App = { data:null, state:{month:"", user:"", category:"SM", view:"home"}, els:{}, toastTimer:null };
 
 window.addEventListener("load", init);
@@ -277,151 +277,45 @@ function renderPreview(){
 }
 
 function renderDashboard(){
-  const d=App.data.dashboard;
-  if(!d) return;
+  const d = App.data.dashboard || {};
+  const income = Number(d.totalIncome) || 0;
+  const spent = Number(d.totalSpent) || 0;
+  const available = Number(d.remainingAfterSpent) || 0;
 
-  App.els.dashboardCard.classList.remove("hidden");
-  App.els.dashRemaining.textContent=money(d.remainingAfterSpent);
-  App.els.dashIncome.textContent=money(d.totalIncome);
-  App.els.dashExpenses.textContent=money(d.totalSpent);
+  const spentPct = income > 0 ? Math.min(Math.round((spent / income) * 100), 999) : 0;
+  const availablePct = income > 0 ? Math.max(Math.round((available / income) * 100), 0) : 0;
 
-  const pct=Math.round(d.spentPercent || 0);
-  App.els.dashPercent.textContent=pct+"%";
-  App.els.dashProgressFill.style.width=Math.min(pct,100)+"%";
-  App.els.dashProgressFill.className="dash-progress-fill";
-  if(pct>=90) App.els.dashProgressFill.classList.add("danger");
-  else if(pct>=70) App.els.dashProgressFill.classList.add("warning");
+  const container = App.els.dashboardCards || document.getElementById("dashboardCards");
+  if(!container) return;
+
+  container.className = "dashboard-cards sprint-dashboard";
+  container.innerHTML = `
+    <article class="dash-card dash-income">
+      <div class="dash-accent"></div>
+      <div class="dash-icon">💚</div>
+      <div class="dash-value">${money(income)}</div>
+      <div class="dash-label">Income</div>
+      <div class="dash-meta">Monthly income</div>
+    </article>
+
+    <article class="dash-card dash-expenses">
+      <div class="dash-accent"></div>
+      <div class="dash-icon">🛍️</div>
+      <div class="dash-value">${money(spent)}</div>
+      <div class="dash-label">Expenses</div>
+      <div class="dash-meta">${spentPct}% of income</div>
+    </article>
+
+    <article class="dash-card dash-available">
+      <div class="dash-accent"></div>
+      <div class="dash-icon">🏦</div>
+      <div class="dash-value">${money(available)}</div>
+      <div class="dash-label">Available</div>
+      <div class="dash-meta">${availablePct}% remaining</div>
+    </article>
+  `;
 }
 
-function renderBudgetList(){
-  App.els.budgetList.innerHTML="";
-  App.data.categories.forEach(c=>{
-    const pct=c.budget>0 ? Math.min((c.totalSpent/c.budget)*100,100) : 0;
-    const row=document.createElement("div");
-    row.className="budget-row";
-    row.innerHTML=`<div class="budget-row-top"><div class="budget-row-title">${esc(c.category)}</div><div class="budget-row-balance">${money(c.balance)}</div></div><div class="budget-mini-track"><div class="budget-mini-fill" style="width:${pct}%"></div></div>`;
-    row.addEventListener("click", ()=>{ setCategory(c.category); switchView("home"); });
-    App.els.budgetList.appendChild(row);
-  });
-}
-
-function renderSettings(){
-  App.els.settingsMonth.textContent=App.state.month || "-";
-  App.els.settingsUser.textContent=App.state.user || "-";
-  App.els.createMonthBtn.textContent=App.data.nextMonth ? "Create "+App.data.nextMonth : "Create Next Month";
-}
-
-function submitExpense(){
-  const user=App.state.user;
-  const month=App.state.month;
-  const category=App.els.categorySelect.value;
-  const amount=App.els.amountInput.value;
-
-  if(!user){ showMessage("Please choose user.","error",0); return; }
-  if(!amount || Number(amount)<=0){ showMessage("Please enter a valid amount.","error"); return; }
-
-  App.els.addBtn.disabled=true;
-  App.els.addBtn.textContent="Saving...";
-
-  api({action:"addExpense", user, month, category, amount})
-    .then(r=>{
-      App.els.amountInput.value="";
-      App.state.category=category;
-      localStorage.setItem("budgetTrackerLastCategory",category);
-      saveSmartUndo({ user, month, category, amount:Number(r.amount), relatedId:r.ledgerId || "", timestamp:Date.now() });
-      showMessage("Saved · "+money(r.amount)+" → "+r.category,"success");
-      return loadData(month);
-    })
-    .catch(e=>showMessage(e.message,"error",0))
-    .finally(()=>{
-      App.els.addBtn.disabled=false;
-      App.els.addBtn.textContent="Add Expense";
-    });
-}
-
-function smartUndo(){
-  const tx=getSmartUndo();
-
-  if(!tx){
-    renderSmartUndo();
-    return;
-  }
-
-  if(!confirm("Undo "+money(tx.amount)+" from "+tx.category+"?")) return;
-
-  App.els.undoBtn.disabled=true;
-  App.els.undoBtn.textContent="Undoing...";
-
-  api({action:"undoExpense", user:tx.user, month:tx.month, category:tx.category, amount:tx.amount, relatedId:tx.relatedId || ""})
-    .then(r=>{
-      clearSmartUndo();
-      showMessage(r.message,"warning");
-      return loadData(tx.month);
-    })
-    .catch(e=>showMessage(e.message,"error",0))
-    .finally(()=>{
-      App.els.undoBtn.disabled=false;
-      App.els.undoBtn.textContent="Undo";
-    });
-}
-
-function saveSmartUndo(tx){
-  localStorage.setItem("familyBudgetSmartUndo", JSON.stringify(tx));
-}
-
-function getSmartUndo(){
-  try{
-    const raw=localStorage.getItem("familyBudgetSmartUndo");
-    if(!raw) return null;
-
-    const tx=JSON.parse(raw);
-    if(!tx || !tx.amount) return null;
-    if(tx.user!==App.state.user) return null;
-    if(tx.month!==App.state.month) return null;
-
-    return tx;
-  }catch(e){
-    return null;
-  }
-}
-
-function clearSmartUndo(){
-  localStorage.removeItem("familyBudgetSmartUndo");
-}
-
-function renderSmartUndo(){
-  const tx=getSmartUndo();
-
-  if(!tx){
-    App.els.undoCard.classList.add("hidden");
-    return;
-  }
-
-  App.els.undoCard.classList.remove("hidden");
-  App.els.lastExpenseText.textContent=money(tx.amount)+" · "+tx.category+" · "+tx.user;
-}
-
-
-
-function renderHistoryFilters(){
-  if(!App.data) return;
-  if(App.els.historyMonthFilter){
-    const currentValue = App.els.historyMonthFilter.value || "current";
-    App.els.historyMonthFilter.innerHTML = "";
-    addOption(App.els.historyMonthFilter, "current", "Current Month");
-    addOption(App.els.historyMonthFilter, "", "All Months");
-    (App.data.availableMonths || []).forEach(m => addOption(App.els.historyMonthFilter, m, m));
-    App.els.historyMonthFilter.value = currentValue;
-  }
-  if(App.els.historyUserFilter){
-    const currentValue = App.els.historyUserFilter.value || "current";
-    App.els.historyUserFilter.innerHTML = "";
-    addOption(App.els.historyUserFilter, "current", "Current User");
-    addOption(App.els.historyUserFilter, "", "All Users");
-    (App.data.users || []).forEach(u => addOption(App.els.historyUserFilter, u, u));
-    App.els.historyUserFilter.value = currentValue;
-  }
-}
 function addOption(select, value, label){
   const option = document.createElement("option");
   option.value = value;
