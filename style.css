@@ -9,3 +9,9 @@
 
 /* v6.5 History Manager */
 .history-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.history-summary div{background:rgba(255,255,255,.07);border-radius:18px;padding:12px}.history-summary span{display:block;color:var(--muted);font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.history-summary strong{display:block;font-size:26px;font-weight:950;letter-spacing:-.8px}.history-filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.history-filters label{margin:0}.history-filters select{height:46px;font-size:15px;font-weight:750}.secondary-action{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);box-shadow:none;min-height:44px;font-size:15px;margin-bottom:10px}.transactions-list{display:grid;gap:10px;margin-top:10px}.tx-row{background:var(--soft);border-radius:18px;padding:13px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}.tx-main strong{display:block;font-size:18px;font-weight:950}.tx-main span{display:block;color:var(--muted);font-size:12px;font-weight:800;margin-top:4px;line-height:1.35}.tx-side{text-align:right}.tx-side strong{display:block;font-size:20px;font-weight:950}.tx-delete{width:auto;min-height:34px;border-radius:12px;padding:0 12px;margin-top:7px;font-size:13px;background:rgba(239,68,68,.22);border:1px solid rgba(239,68,68,.55);box-shadow:none}.empty-state{background:var(--soft);border-radius:18px;padding:14px;color:var(--muted);font-weight:800;text-align:center}
+
+.tx-action{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:900;margin-bottom:6px}
+.tx-action.added{background:rgba(76,175,80,.22);color:#b8ffbd}
+.tx-action.undo{background:rgba(245,158,11,.22);color:#ffdca0}
+.tx-action.deleted{background:rgba(239,68,68,.22);color:#ffb3b3}
+.tx-delete.hidden{display:none!important}

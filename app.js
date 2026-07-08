@@ -6,7 +6,7 @@ const FAVORITES = [
   { label: "👕 ΡΟΥΧΑ", category: "ΡΟΥΧΑ", full: true }
 ];
 
-const APP_VERSION = "6.5";
+const APP_VERSION = "6.6";
 const App = { data:null, state:{month:"", user:"", category:"SM", view:"home"}, els:{}, toastTimer:null };
 
 window.addEventListener("load", init);
@@ -328,7 +328,7 @@ function submitExpense(){
       App.els.amountInput.value="";
       App.state.category=category;
       localStorage.setItem("budgetTrackerLastCategory",category);
-      saveSmartUndo({ user, month, category, amount:Number(r.amount), timestamp:Date.now() });
+      saveSmartUndo({ user, month, category, amount:Number(r.amount), relatedId:r.ledgerId || "", timestamp:Date.now() });
       showMessage("Saved · "+money(r.amount)+" → "+r.category,"success");
       return loadData(month);
     })
@@ -352,7 +352,7 @@ function smartUndo(){
   App.els.undoBtn.disabled=true;
   App.els.undoBtn.textContent="Undoing...";
 
-  api({action:"undoExpense", user:tx.user, month:tx.month, category:tx.category, amount:tx.amount})
+  api({action:"undoExpense", user:tx.user, month:tx.month, category:tx.category, amount:tx.amount, relatedId:tx.relatedId || ""})
     .then(r=>{
       clearSmartUndo();
       showMessage(r.message,"warning");
@@ -444,7 +444,7 @@ function loadTransactions(){
     .then(r => {
       const items = r.transactions || [];
       updateHistorySummary(items);
-      status.textContent = "Backend v" + (r.backendVersion || "?") + " · " + items.length + " transactions";
+      status.textContent = "Backend v" + (r.backendVersion || "?") + " · " + items.length + " ledger rows";
       renderTransactions(items);
     })
     .catch(e => {
@@ -462,19 +462,35 @@ function updateHistorySummary(items){
 function renderTransactions(items){
   const list = document.getElementById("transactionsList");
   if(!list) return;
+
   list.innerHTML = "";
+
   if(!items.length){
     list.innerHTML = '<div class="empty-state">No transactions for the selected filters.</div>';
     return;
   }
+
   items.forEach(tx => {
+    const action = String(tx.action || "Added");
+    const actionClass = action.toLowerCase();
     const row = document.createElement("div");
     row.className = "tx-row";
-    row.innerHTML = `<div class="tx-main"><strong>${categoryIcon(tx.category)} ${esc(tx.category)}</strong><span>👤 ${esc(tx.user)}<br>📅 ${formatDate(tx.date)} · ${esc(tx.month)}</span></div><div class="tx-side"><strong>${money(tx.amount)}</strong><button class="tx-delete" type="button">Delete</button></div>`;
-    row.querySelector(".tx-delete").addEventListener("click", () => deleteTransaction(tx));
+    row.innerHTML = `
+      <div class="tx-main">
+        <span class="tx-action ${actionClass}">${esc(action)}</span>
+        <strong>${categoryIcon(tx.category)} ${esc(tx.category)}</strong>
+        <span>👤 ${esc(tx.user)}<br>📅 ${formatDate(tx.date)} · ${esc(tx.month)}</span>
+      </div>
+      <div class="tx-side">
+        <strong>${money(tx.amount)}</strong>
+        <button class="tx-delete ${tx.canDelete ? "" : "hidden"}" type="button">Delete</button>
+      </div>`;
+    const btn = row.querySelector(".tx-delete");
+    if(btn) btn.addEventListener("click", () => deleteTransaction(tx));
     list.appendChild(row);
   });
 }
+
 function deleteTransaction(tx){
   if(!confirm("Delete " + money(tx.amount) + " from " + tx.category + "?")) return;
   api({ action:"deleteTransaction", id:tx.id })
