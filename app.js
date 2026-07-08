@@ -6,7 +6,7 @@ const FAVORITES = [
   { label: "👕 ΡΟΥΧΑ", category: "ΡΟΥΧΑ", full: true }
 ];
 
-const APP_VERSION = "Sprint 1.1.3";
+const APP_VERSION = "Sprint 1.2";
 const App = { data:null, state:{month:"", user:"", category:"SM", view:"home"}, els:{}, toastTimer:null };
 
 window.addEventListener("load", init);
@@ -132,7 +132,6 @@ function renderAll(){
   renderFavorites();
   renderPreview();
   renderSmartUndo();
-  updateSprintDashboardCards();
   renderHistoryFilters();
   switchView(App.state.view);
 }
@@ -223,212 +222,26 @@ function renderFavorites(){
     if(!App.data.categories.some(c=>c.category===f.category)) return;
     const b=document.createElement("button");
     b.type="button";
-    b.className="favorite-button"+(f.full?" full":"")+(f.category===App.state.category?" active":"");
-    b.textContent=f.label;
-    b.addEventListener("click", ()=>setCategory(f.category));
+    b.className="quick-category-chip"+(f.full?" wide":"")+(f.category===App.state.category?" active":"");
+    const parts = f.label.split(" ");
+    const icon = parts[0] || "🧾";
+    const label = parts.slice(1).join(" ") || f.category;
+    b.innerHTML = `<span>${esc(icon)}</span><strong>${esc(label)}</strong>`;
+    b.addEventListener("click", ()=>{
+      setCategory(f.category);
+      setTimeout(()=>App.els.amountInput && App.els.amountInput.focus(), 50);
+    });
     App.els.favoriteButtons.appendChild(b);
   });
+
+  const more=document.createElement("button");
+  more.type="button";
+  more.className="quick-category-chip more-chip";
+  more.innerHTML="<span>•••</span><strong>More</strong>";
+  more.addEventListener("click", ()=>App.els.categorySelect.focus());
+  App.els.favoriteButtons.appendChild(more);
 }
 
-function renderCategories(){
-  App.els.categorySelect.innerHTML="";
-  App.data.categories.forEach(c=>{
-    const o=document.createElement("option");
-    o.value=c.category; o.textContent=c.category;
-    App.els.categorySelect.appendChild(o);
-  });
-}
-
-function restoreCategory(){
-  const saved=App.state.category || localStorage.getItem("budgetTrackerLastCategory") || "SM";
-  if(App.data.categories.some(c=>c.category===saved)){
-    App.state.category=saved;
-  }else if(App.data.categories.length){
-    App.state.category=App.data.categories[0].category;
-  }
-  App.els.categorySelect.value=App.state.category;
-}
-
-function renderMiniDashboard(){
-  const d=App.data.dashboard;
-  if(!d) return;
-
-  App.els.miniDashboard.classList.remove("hidden");
-  App.els.miniRemaining.textContent=money(d.remainingAfterSpent);
-  const pct=Math.round(d.spentPercent || 0);
-  App.els.miniDashboardFill.style.width=Math.min(pct,100)+"%";
-}
-
-function renderPreview(){
-  const item=App.data.categories.find(c=>c.category===App.state.category);
-  if(!item) return;
-
-  App.els.heroCard.classList.remove("hidden");
-  App.els.previewCategory.textContent=item.category;
-  App.els.previewBalance.textContent=money(item.balance);
-  App.els.previewBudget.textContent=money(item.budget);
-  App.els.previewSpent.textContent=money(item.totalSpent);
-
-  const pct=item.budget>0 ? Math.min((item.totalSpent/item.budget)*100,100) : 0;
-  App.els.progressFill.style.width=pct+"%";
-  App.els.progressFill.className="progress-fill";
-  if(item.totalSpent>item.budget) App.els.progressFill.classList.add("over");
-  else if(pct>=90) App.els.progressFill.classList.add("danger");
-  else if(pct>=70) App.els.progressFill.classList.add("warning");
-}
-
-function renderDashboard(){
-  const d=App.data.dashboard;
-  if(!d) return;
-
-  App.els.dashboardCard.classList.remove("hidden");
-  App.els.dashRemaining.textContent=money(d.remainingAfterSpent);
-  App.els.dashIncome.textContent=money(d.totalIncome);
-  App.els.dashExpenses.textContent=money(d.totalSpent);
-
-  const pct=Math.round(d.spentPercent || 0);
-  App.els.dashPercent.textContent=pct+"%";
-  App.els.dashProgressFill.style.width=Math.min(pct,100)+"%";
-  App.els.dashProgressFill.className="dash-progress-fill";
-  if(pct>=90) App.els.dashProgressFill.classList.add("danger");
-  else if(pct>=70) App.els.dashProgressFill.classList.add("warning");
-}
-
-function renderBudgetList(){
-  App.els.budgetList.innerHTML="";
-  App.data.categories.forEach(c=>{
-    const pct=c.budget>0 ? Math.min((c.totalSpent/c.budget)*100,100) : 0;
-    const row=document.createElement("div");
-    row.className="budget-row";
-    row.innerHTML=`<div class="budget-row-top"><div class="budget-row-title">${esc(c.category)}</div><div class="budget-row-balance">${money(c.balance)}</div></div><div class="budget-mini-track"><div class="budget-mini-fill" style="width:${pct}%"></div></div>`;
-    row.addEventListener("click", ()=>{ setCategory(c.category); switchView("home"); });
-    App.els.budgetList.appendChild(row);
-  });
-}
-
-function renderSettings(){
-  App.els.settingsMonth.textContent=App.state.month || "-";
-  App.els.settingsUser.textContent=App.state.user || "-";
-  App.els.createMonthBtn.textContent=App.data.nextMonth ? "Create "+App.data.nextMonth : "Create Next Month";
-}
-
-function submitExpense(){
-  const user=App.state.user;
-  const month=App.state.month;
-  const category=App.els.categorySelect.value;
-  const amount=App.els.amountInput.value;
-
-  if(!user){ showMessage("Please choose user.","error",0); return; }
-  if(!amount || Number(amount)<=0){ showMessage("Please enter a valid amount.","error"); return; }
-
-  App.els.addBtn.disabled=true;
-  App.els.addBtn.textContent="Saving...";
-
-  api({action:"addExpense", user, month, category, amount})
-    .then(r=>{
-      App.els.amountInput.value="";
-      App.state.category=category;
-      localStorage.setItem("budgetTrackerLastCategory",category);
-      saveSmartUndo({ user, month, category, amount:Number(r.amount), relatedId:r.ledgerId || "", timestamp:Date.now() });
-      showMessage("Saved · "+money(r.amount)+" → "+r.category,"success");
-      return loadData(month);
-    })
-    .catch(e=>showMessage(e.message,"error",0))
-    .finally(()=>{
-      App.els.addBtn.disabled=false;
-      App.els.addBtn.textContent="Add Expense";
-    });
-}
-
-function smartUndo(){
-  const tx=getSmartUndo();
-
-  if(!tx){
-    renderSmartUndo();
-    return;
-  }
-
-  if(!confirm("Undo "+money(tx.amount)+" from "+tx.category+"?")) return;
-
-  App.els.undoBtn.disabled=true;
-  App.els.undoBtn.textContent="Undoing...";
-
-  api({action:"undoExpense", user:tx.user, month:tx.month, category:tx.category, amount:tx.amount, relatedId:tx.relatedId || ""})
-    .then(r=>{
-      clearSmartUndo();
-      showMessage(r.message,"warning");
-      return loadData(tx.month);
-    })
-    .catch(e=>showMessage(e.message,"error",0))
-    .finally(()=>{
-      App.els.undoBtn.disabled=false;
-      App.els.undoBtn.textContent="Undo";
-    });
-}
-
-function saveSmartUndo(tx){
-  localStorage.setItem("familyBudgetSmartUndo", JSON.stringify(tx));
-}
-
-function getSmartUndo(){
-  try{
-    const raw=localStorage.getItem("familyBudgetSmartUndo");
-    if(!raw) return null;
-
-    const tx=JSON.parse(raw);
-    if(!tx || !tx.amount) return null;
-    if(tx.user!==App.state.user) return null;
-    if(tx.month!==App.state.month) return null;
-
-    return tx;
-  }catch(e){
-    return null;
-  }
-}
-
-function clearSmartUndo(){
-  localStorage.removeItem("familyBudgetSmartUndo");
-}
-
-function renderSmartUndo(){
-  const tx=getSmartUndo();
-
-  if(!tx){
-    App.els.undoCard.classList.add("hidden");
-    return;
-  }
-
-  App.els.undoCard.classList.remove("hidden");
-  App.els.lastExpenseText.textContent=money(tx.amount)+" · "+tx.category+" · "+tx.user;
-}
-
-
-
-function renderHistoryFilters(){
-  if(!App.data) return;
-  if(App.els.historyMonthFilter){
-    const currentValue = App.els.historyMonthFilter.value || "current";
-    App.els.historyMonthFilter.innerHTML = "";
-    addOption(App.els.historyMonthFilter, "current", "Current Month");
-    addOption(App.els.historyMonthFilter, "", "All Months");
-    (App.data.availableMonths || []).forEach(m => addOption(App.els.historyMonthFilter, m, m));
-    App.els.historyMonthFilter.value = currentValue;
-  }
-  if(App.els.historyUserFilter){
-    const currentValue = App.els.historyUserFilter.value || "current";
-    App.els.historyUserFilter.innerHTML = "";
-    addOption(App.els.historyUserFilter, "current", "Current User");
-    addOption(App.els.historyUserFilter, "", "All Users");
-    (App.data.users || []).forEach(u => addOption(App.els.historyUserFilter, u, u));
-    App.els.historyUserFilter.value = currentValue;
-  }
-}
-function addOption(select, value, label){
-  const option = document.createElement("option");
-  option.value = value;
-  option.textContent = label;
-  select.appendChild(option);
-}
 function getHistoryFilters(){
   const monthValue = App.els.historyMonthFilter ? App.els.historyMonthFilter.value : "current";
   const userValue = App.els.historyUserFilter ? App.els.historyUserFilter.value : "current";
@@ -553,32 +366,3 @@ function showMessage(text,type="success",timeout=2200){
 
 function money(v){ return "€"+Number(v||0).toFixed(2); }
 function esc(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
-
-
-/* Sprint 1.1.3 — Real Dashboard Cards Patch */
-function updateSprintDashboardCards(){
-  if(!window.App || !App.data || !App.data.dashboard) return;
-
-  const d = App.data.dashboard || {};
-  const income = Number(d.totalIncome) || 0;
-  const expenses = Number(d.totalSpent) || 0;
-  const available = Number(d.remainingAfterSpent) || 0;
-
-  const expensesPct = income > 0 ? Math.min(Math.round((expenses / income) * 100), 999) : 0;
-  const availablePct = income > 0 ? Math.max(Math.round((available / income) * 100), 0) : 0;
-
-  const incomeEl = document.getElementById("dashIncomeValue");
-  const expensesEl = document.getElementById("dashExpensesValue");
-  const availableEl = document.getElementById("dashAvailableValue");
-  const expensesMeta = document.getElementById("dashExpensesMeta");
-  const availableMeta = document.getElementById("dashAvailableMeta");
-
-  if(incomeEl) incomeEl.textContent = money(income);
-  if(expensesEl) expensesEl.textContent = money(expenses);
-  if(availableEl) availableEl.textContent = money(available);
-  if(expensesMeta) expensesMeta.textContent = expensesPct + "% of income";
-  if(availableMeta) availableMeta.textContent = availablePct + "% remaining";
-}
-
-
-setInterval(updateSprintDashboardCards, 1000);
