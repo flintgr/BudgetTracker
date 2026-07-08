@@ -6,7 +6,7 @@ const FAVORITES = [
   { label: "👕 ΡΟΥΧΑ", category: "ΡΟΥΧΑ", full: true }
 ];
 
-const APP_VERSION = "Sprint 1.1.1";
+const APP_VERSION = "Sprint 1.1.2";
 const App = { data:null, state:{month:"", user:"", category:"SM", view:"home"}, els:{}, toastTimer:null };
 
 window.addEventListener("load", init);
@@ -555,10 +555,9 @@ function money(v){ return "€"+Number(v||0).toFixed(2); }
 function esc(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
 
 
-/* Sprint 1.1.1 — Safe Dashboard Cards Decorator */
+/* Sprint 1.1.2 — Applied Dashboard Cards */
 function applySprintDashboardCards(){
-  const container = document.getElementById("dashboardCards");
-  if(!container || !App || !App.data || !App.data.dashboard) return;
+  if(!window.App || !App.data || !App.data.dashboard) return;
 
   const d = App.data.dashboard || {};
   const income = Number(d.totalIncome) || 0;
@@ -568,30 +567,58 @@ function applySprintDashboardCards(){
   const expensesPct = income > 0 ? Math.min(Math.round((expenses / income) * 100), 999) : 0;
   const availablePct = income > 0 ? Math.max(Math.round((available / income) * 100), 0) : 0;
 
-  container.classList.add("sprint-dashboard");
-  container.innerHTML = `
-    <article class="dash-card dash-income">
-      <div class="dash-accent"></div>
-      <div class="dash-icon">💚</div>
-      <div class="dash-value">${money(income)}</div>
-      <div class="dash-label">Income</div>
-      <div class="dash-meta">Monthly income</div>
-    </article>
+  const html = `
+    <section id="sprintDashboardCards" class="sprint-dashboard">
+      <article class="dash-card dash-income">
+        <div class="dash-accent"></div>
+        <div class="dash-icon">💚</div>
+        <div class="dash-value">${money(income)}</div>
+        <div class="dash-label">Income</div>
+        <div class="dash-meta">Monthly income</div>
+      </article>
 
-    <article class="dash-card dash-expenses">
-      <div class="dash-accent"></div>
-      <div class="dash-icon">🛍️</div>
-      <div class="dash-value">${money(expenses)}</div>
-      <div class="dash-label">Expenses</div>
-      <div class="dash-meta">${expensesPct}% of income</div>
-    </article>
+      <article class="dash-card dash-expenses">
+        <div class="dash-accent"></div>
+        <div class="dash-icon">🛍️</div>
+        <div class="dash-value">${money(expenses)}</div>
+        <div class="dash-label">Expenses</div>
+        <div class="dash-meta">${expensesPct}% of income</div>
+      </article>
 
-    <article class="dash-card dash-available">
-      <div class="dash-accent"></div>
-      <div class="dash-icon">🏦</div>
-      <div class="dash-value">${money(available)}</div>
-      <div class="dash-label">Available</div>
-      <div class="dash-meta">${availablePct}% remaining</div>
-    </article>
+      <article class="dash-card dash-available">
+        <div class="dash-accent"></div>
+        <div class="dash-icon">🏦</div>
+        <div class="dash-value">${money(available)}</div>
+        <div class="dash-label">Available</div>
+        <div class="dash-meta">${availablePct}% remaining</div>
+      </article>
+    </section>
   `;
+
+  const existing = document.getElementById("sprintDashboardCards");
+  if(existing){
+    existing.outerHTML = html;
+    return;
+  }
+
+  // The current v6.6 home has a single summary card at the top.
+  // We replace the first large card that contains the text "REMAINING THIS MONTH".
+  const candidates = Array.from(document.querySelectorAll("section, .screen-card, .card, div"));
+  const oldSummary = candidates.find(el => {
+    const txt = (el.textContent || "").toUpperCase();
+    return txt.includes("REMAINING THIS MONTH");
+  });
+
+  if(oldSummary){
+    oldSummary.outerHTML = html;
+    return;
+  }
+
+  // Fallback: insert after the header area.
+  const main = document.querySelector("main") || document.body;
+  main.insertAdjacentHTML("afterbegin", html);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(applySprintDashboardCards, 500);
+});

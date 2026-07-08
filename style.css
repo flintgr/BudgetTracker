@@ -17,12 +17,13 @@
 .tx-delete.hidden{display:none!important}
 
 
-/* Sprint 1.1.1 — Dashboard Cards Safe Fix */
+/* Sprint 1.1.2 — Applied Dashboard Cards */
 .sprint-dashboard{
   display:grid!important;
   grid-template-columns:1fr 1fr;
   gap:12px;
-  margin:14px 0 18px;
+  margin:12px 0 14px;
+  padding:0 14px;
 }
 .sprint-dashboard .dash-card{
   position:relative;
@@ -31,7 +32,7 @@
   border:1px solid rgba(255,255,255,.12);
   border-radius:22px;
   padding:16px 14px 14px;
-  min-height:142px;
+  min-height:132px;
   box-shadow:0 14px 38px rgba(0,0,0,.18);
   transition:transform .12s ease;
 }
@@ -44,17 +45,17 @@
   height:4px;
 }
 .sprint-dashboard .dash-icon{
-  width:42px;
-  height:42px;
+  width:40px;
+  height:40px;
   display:grid;
   place-items:center;
   border-radius:50%;
   background:rgba(255,255,255,.10);
-  font-size:22px;
-  margin-bottom:12px;
+  font-size:21px;
+  margin-bottom:11px;
 }
 .sprint-dashboard .dash-value{
-  font-size:28px;
+  font-size:27px;
   line-height:1;
   font-weight:950;
   letter-spacing:-1px;
@@ -83,7 +84,7 @@
 .sprint-dashboard .dash-expenses .dash-label{color:#fca5a5}
 .sprint-dashboard .dash-available{
   grid-column:1 / -1;
-  min-height:132px;
+  min-height:126px;
   background:linear-gradient(180deg, rgba(59,130,246,.20), rgba(255,255,255,.06));
 }
 .sprint-dashboard .dash-available .dash-accent{background:#3b82f6}
@@ -91,6 +92,6 @@
 .sprint-dashboard .dash-available .dash-value{font-size:34px}
 @media (min-width:720px){
   .sprint-dashboard{grid-template-columns:repeat(3,1fr)}
-  .sprint-dashboard .dash-available{grid-column:auto;min-height:142px}
-  .sprint-dashboard .dash-available .dash-value{font-size:28px}
+  .sprint-dashboard .dash-available{grid-column:auto;min-height:132px}
+  .sprint-dashboard .dash-available .dash-value{font-size:27px}
 }
