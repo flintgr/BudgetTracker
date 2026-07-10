@@ -1,11 +1,17 @@
 const $ = (id) => document.getElementById(id);
 
 const QUICK_STORAGE_KEY = "familyBudget.homeV2.quickCategories";
+const USER_STORAGE_KEY = "budgetTrackerUser";
+const MONTH_STORAGE_KEY = "budgetTrackerMonth";
+const LAST_CATEGORY_KEY = "budgetTrackerLastCategory";
 const MAX_QUICK_CATEGORIES = 8;
 
 let appData = null;
-let selectedCategory = "";
+let activeUser = localStorage.getItem(USER_STORAGE_KEY) || window.FB_CONFIG.DEFAULT_USER || "";
+let activeMonth = localStorage.getItem(MONTH_STORAGE_KEY) || "";
+let selectedCategory = localStorage.getItem(LAST_CATEGORY_KEY) || "";
 let quickCategoryNames = [];
+let messageTimer = null;
 
 function money(value){
   const n = Number(value) || 0;
@@ -20,14 +26,18 @@ function api(params){
     const callback = "fbv2_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
     const url = new URL(window.FB_CONFIG.API_URL);
 
-    Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+    Object.entries(params).forEach(([key, value]) => {
+      if(value !== undefined && value !== null && value !== ""){
+        url.searchParams.set(key, value);
+      }
+    });
     url.searchParams.set("callback", callback);
 
     const script = document.createElement("script");
     const timer = setTimeout(() => {
       cleanup();
       reject(new Error("API timeout"));
-    }, 12000);
+    }, 15000);
 
     function cleanup(){
       clearTimeout(timer);
@@ -168,6 +178,58 @@ function saveQuickCategoryNames(){
   localStorage.setItem(QUICK_STORAGE_KEY, JSON.stringify(quickCategoryNames));
 }
 
+function parseAmount(value){
+  const raw = String(value || "").trim().replace(/\s/g, "");
+  if(!raw) return 0;
+
+  let normalized = raw;
+
+  if(raw.includes(",") && raw.includes(".")){
+    const lastComma = raw.lastIndexOf(",");
+    const lastDot = raw.lastIndexOf(".");
+
+    if(lastComma > lastDot){
+      normalized = raw.replace(/\./g, "").replace(",", ".");
+    }else{
+      normalized = raw.replace(/,/g, "");
+    }
+  }else if(raw.includes(",")){
+    normalized = raw.replace(",", ".");
+  }
+
+  const number = Number(normalized);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function sanitizeAmountInput(value){
+  let clean = String(value || "").replace(/[^0-9.,]/g, "");
+
+  const separators = [...clean].filter(char => char === "." || char === ",");
+  if(separators.length > 1){
+    const firstIndex = clean.search(/[.,]/);
+    const before = clean.slice(0, firstIndex + 1);
+    const after = clean.slice(firstIndex + 1).replace(/[.,]/g, "");
+    clean = before + after;
+  }
+
+  return clean;
+}
+
+function formatAmount(value){
+  return new Intl.NumberFormat("el-GR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
+function showMessage(text, type="success", duration=2200){
+  const el = $("homeMessage");
+  clearTimeout(messageTimer);
+  el.textContent = text;
+  el.className = "home-message " + type;
+  messageTimer = setTimeout(() => el.classList.add("hidden"), duration);
+}
+
 function renderSummary(data){
   const dashboard = data.dashboard || {};
   const income = Number(dashboard.totalIncome) || 0;
@@ -187,7 +249,79 @@ function renderSummary(data){
   $("availableValue").textContent = money(available);
   $("expensesMeta").textContent = expensesPct + "% of income";
   $("availableMeta").textContent = availablePct + "% remaining";
-  $("monthPill").textContent = data.selectedMonth || data.latestMonth || "Month";
+  $("monthPill").textContent = activeMonth || data.selectedMonth || data.latestMonth || "Month";
+}
+
+function renderMonths(){
+  const menu = $("monthMenuV2");
+  menu.innerHTML = "";
+
+  const months = Array.isArray(appData?.availableMonths) ? appData.availableMonths : [];
+
+  months.forEach(month => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = month;
+    button.className = month === activeMonth ? "active" : "";
+
+    button.addEventListener("click", async () => {
+      menu.classList.add("hidden");
+      if(month === activeMonth) return;
+
+      activeMonth = month;
+      localStorage.setItem(MONTH_STORAGE_KEY, activeMonth);
+      await loadData();
+    });
+
+    menu.appendChild(button);
+  });
+}
+
+function renderUsers(){
+  const container = $("userButtonsV2");
+  container.innerHTML = "";
+
+  const users = Array.isArray(appData?.users) ? appData.users : [];
+
+  if(!activeUser && users.length){
+    activeUser = users[0];
+    localStorage.setItem(USER_STORAGE_KEY, activeUser);
+  }
+
+  users.forEach(user => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "user" + (user === activeUser ? " active" : "");
+    button.textContent = user;
+
+    button.addEventListener("click", async () => {
+      if(user === activeUser) return;
+      activeUser = user;
+      localStorage.setItem(USER_STORAGE_KEY, activeUser);
+      await loadData();
+    });
+
+    container.appendChild(button);
+  });
+}
+
+function renderCategorySelect(){
+  const select = $("categorySelectV2");
+  const names = getRealCategoryNames(appData);
+  select.innerHTML = "";
+
+  names.forEach(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    select.appendChild(option);
+  });
+
+  if(!names.some(name => normalizeName(name) === normalizeName(selectedCategory))){
+    selectedCategory = names[0] || "";
+  }
+
+  select.value = selectedCategory;
 }
 
 function renderQuickCategories(){
@@ -207,7 +341,7 @@ function renderQuickCategories(){
   }
 
   if(!quickCategoryNames.some(name => normalizeName(name) === normalizeName(selectedCategory))){
-    selectedCategory = quickCategoryNames[0] || "";
+    selectedCategory = quickCategoryNames[0] || availableNames[0] || "";
   }
 
   container.innerHTML = "";
@@ -225,7 +359,10 @@ function renderQuickCategories(){
 
     button.addEventListener("click", () => {
       selectedCategory = name;
+      localStorage.setItem(LAST_CATEGORY_KEY, selectedCategory);
       renderQuickCategories();
+      renderCategorySelect();
+      $("amountInputV2").focus();
     });
 
     container.appendChild(button);
@@ -287,6 +424,75 @@ function renderQuickCategorySettings(){
   });
 }
 
+function updateAddState(){
+  $("addExpenseBtnV2").disabled = parseAmount($("amountInputV2").value) <= 0;
+}
+
+async function submitExpense(){
+  const amount = parseAmount($("amountInputV2").value);
+  const category = $("categorySelectV2").value || selectedCategory;
+
+  if(!activeUser){
+    showMessage("Please choose a user.", "error");
+    return;
+  }
+
+  if(!activeMonth){
+    showMessage("Please choose a month.", "error");
+    return;
+  }
+
+  if(!category){
+    showMessage("Please choose a category.", "error");
+    return;
+  }
+
+  if(amount <= 0){
+    showMessage("Please enter a valid amount.", "error");
+    return;
+  }
+
+  const button = $("addExpenseBtnV2");
+  button.disabled = true;
+  button.innerHTML = "<span>…</span>Saving";
+
+  try{
+    const result = await api({
+      action: "addExpense",
+      user: activeUser,
+      month: activeMonth,
+      category,
+      amount
+    });
+
+    selectedCategory = category;
+    localStorage.setItem(LAST_CATEGORY_KEY, selectedCategory);
+
+    $("amountInputV2").value = "";
+    showMessage("Added " + money(result.amount) + " to " + result.category, "success");
+
+    button.innerHTML = "<span>✓</span>Added";
+    await loadData();
+
+    setTimeout(() => {
+      button.innerHTML = "<span>＋</span>Add Expense";
+      updateAddState();
+      $("amountInputV2").focus();
+    }, 700);
+  }catch(error){
+    button.innerHTML = "<span>＋</span>Add Expense";
+    updateAddState();
+    showMessage(error.message, "error", 3500);
+  }
+}
+
+function openStableView(view){
+  localStorage.setItem("budgetTrackerRequestedView", view);
+  localStorage.setItem(USER_STORAGE_KEY, activeUser);
+  localStorage.setItem(MONTH_STORAGE_KEY, activeMonth);
+  window.location.href = "../?v=phase5-integration";
+}
+
 function openSettings(){
   $("homeView").classList.add("hidden");
   $("settingsView").classList.remove("hidden");
@@ -308,67 +514,86 @@ function bindUi(){
   $("settingsNavBtn").addEventListener("click", openSettings);
   $("homeNavBtn").addEventListener("click", closeSettings);
   $("closeSettingsBtn").addEventListener("click", closeSettings);
+
+  $("historyNavBtn").addEventListener("click", () => openStableView("transactions"));
+  $("dashboardNavBtn").addEventListener("click", () => openStableView("dashboard"));
+
+  $("monthPill").addEventListener("click", event => {
+    event.stopPropagation();
+    $("monthMenuV2").classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", event => {
+    if(!event.target.closest(".month-picker-v2")){
+      $("monthMenuV2").classList.add("hidden");
+    }
+  });
+
+  $("categorySelectV2").addEventListener("change", event => {
+    selectedCategory = event.target.value;
+    localStorage.setItem(LAST_CATEGORY_KEY, selectedCategory);
+    renderQuickCategories();
+  });
+
+  const amountInput = $("amountInputV2");
+
+  amountInput.addEventListener("focus", () => amountInput.select());
+
+  amountInput.addEventListener("input", event => {
+    event.target.value = sanitizeAmountInput(event.target.value);
+    updateAddState();
+  });
+
+  amountInput.addEventListener("blur", () => {
+    const value = parseAmount(amountInput.value);
+    if(value > 0) amountInput.value = formatAmount(value);
+  });
+
+  amountInput.addEventListener("keydown", event => {
+    if(event.key === "Enter"){
+      event.preventDefault();
+      if(!$("addExpenseBtnV2").disabled) submitExpense();
+    }
+  });
+
+  $("addExpenseBtnV2").addEventListener("click", submitExpense);
+  updateAddState();
+}
+
+async function loadData(){
+  appData = await api({
+    action: "getAppData",
+    user: activeUser || "",
+    month: activeMonth || ""
+  });
+
+  activeMonth = appData.selectedMonth || activeMonth || appData.latestMonth || "";
+  localStorage.setItem(MONTH_STORAGE_KEY, activeMonth);
+
+  const categoryNames = getRealCategoryNames(appData);
+
+  if(!quickCategoryNames.length){
+    quickCategoryNames = loadQuickCategoryNames(categoryNames);
+  }
+
+  renderSummary(appData);
+  renderMonths();
+  renderUsers();
+  renderCategorySelect();
+  renderQuickCategories();
+  renderQuickCategorySettings();
 }
 
 async function load(){
   try{
     $("monthPill").textContent = "Loading...";
-
-    appData = await api({
-      action: "getAppData",
-      user: window.FB_CONFIG.DEFAULT_USER || ""
-    });
-
-    const categoryNames = getRealCategoryNames(appData);
-    quickCategoryNames = loadQuickCategoryNames(categoryNames);
-
-    renderSummary(appData);
-    renderQuickCategories();
     bindUi();
+    await loadData();
   }catch(error){
     $("monthPill").textContent = "Error";
+    showMessage(error.message, "error", 0);
     console.error(error);
   }
 }
 
 load();
-
-
-const amountInput=document.querySelector('.amount-field input');
-const addBtn=document.querySelector('.add');
-
-function parseAmount(v){
-  return parseFloat(String(v).replace(/\./g,'').replace(',','.'))||0;
-}
-function formatAmount(v){
-  return new Intl.NumberFormat('el-GR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);
-}
-function updateAddState(){
-  const v=parseAmount(amountInput.value);
-  addBtn.disabled=v<=0;
-  addBtn.style.opacity=addBtn.disabled?'0.5':'1';
-}
-if(amountInput){
- amountInput.setAttribute('inputmode','decimal');
- amountInput.addEventListener('focus',()=>amountInput.select());
- amountInput.addEventListener('input',e=>{
-   let t=e.target.value.replace(/[^0-9.,]/g,'');
-   const c=(t.match(/,/g)||[]).length;
-   if(c>1){
-     const i=t.indexOf(',');
-     t=t.slice(0,i+1)+t.slice(i+1).replace(/,/g,'');
-   }
-   e.target.value=t;
-   updateAddState();
- });
- amountInput.addEventListener('blur',()=>{
-   const v=parseAmount(amountInput.value);
-   if(v>0) amountInput.value=formatAmount(v);
- });
- addBtn.disabled=true;
- addBtn.addEventListener('click',()=>{
-   amountInput.value='';
-   updateAddState();
-   amountInput.focus();
- });
-}

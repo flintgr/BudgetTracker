@@ -2,12 +2,18 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Home V2 Phase 3.1 Configurable</title>
+<title>Family Budget — Home V2 Phase 5 Integration</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
 <main class="app">
-<header class="header"><div><span>Family Budget</span><h1>Home</h1></div><button id="monthPill">Loading...</button></header>
+<header class="header">
+      <div><span>Family Budget</span><h1>Home</h1></div>
+      <div class="month-picker-v2">
+        <button id="monthPill" type="button">Loading...</button>
+        <div id="monthMenuV2" class="month-menu-v2 hidden"></div>
+      </div>
+    </header>
 
 <div id="homeView"><section class="summary">
 <article class="card income"><i></i><div class="icon">⌄</div><strong id="incomeValue">€0.00</strong><span>Income</span><small>Monthly income</small></article>
@@ -22,15 +28,19 @@
 
 <section class="amount">
 <div class="amount-title"><label>Amount</label><span>EUR</span></div>
-<div class="amount-field"><span>€</span><input placeholder="0,00" inputmode="decimal"></div>
-<button class="add"><span>＋</span>Add Expense</button>
+<div class="amount-field"><span>€</span><input id="amountInputV2" placeholder="0,00" inputmode="decimal"></div>
+<button id="addExpenseBtnV2" class="add" type="button"><span>＋</span>Add Expense</button>
 </section>
 
-<details class="advanced"><summary>Advanced</summary>
-<div class="advanced-content">
-<button class="user active">Chris</button><button class="user">Gianna</button>
-<select><option>SM</option><option>DELIVERY</option><option>WORK ΧΡΗΣΤΟΣ</option></select>
-</div></details>
+<details class="advanced">
+      <summary>Advanced</summary>
+      <div class="advanced-content">
+        <div id="userButtonsV2" class="user-grid-v2"></div>
+        <select id="categorySelectV2"></select>
+      </div>
+    </details>
+
+    <div id="homeMessage" class="home-message hidden"></div>
 
 </div>
 
@@ -48,8 +58,8 @@
 
     <nav>
       <button id="homeNavBtn" class="active" type="button">⌂<span>Home</span></button>
-      <button type="button">☷<span>History</span></button>
-      <button type="button">▤<span>Dashboard</span></button>
+      <button id="historyNavBtn" type="button">☷<span>History</span></button>
+      <button id="dashboardNavBtn" type="button">▤<span>Dashboard</span></button>
       <button id="settingsNavBtn" type="button">⚙<span>Settings</span></button>
     </nav>
 </main>

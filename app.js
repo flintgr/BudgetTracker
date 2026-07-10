@@ -26,6 +26,12 @@ function init(){
   App.state.user = localStorage.getItem("budgetTrackerUser") || "";
   App.state.category = localStorage.getItem("budgetTrackerLastCategory") || "SM";
 
+  const requestedView = localStorage.getItem("budgetTrackerRequestedView");
+  if(requestedView && ["home","budget","dashboard","transactions","settings"].includes(requestedView)){
+    App.state.view = requestedView;
+    localStorage.removeItem("budgetTrackerRequestedView");
+  }
+
   loadData(App.state.month);
 
   if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
