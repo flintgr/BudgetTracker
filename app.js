@@ -1,10 +1,11 @@
-const FAVORITES = [
-  { label: "🛒 SM", category: "SM" },
-  { label: "🍔 DELIVERY", category: "DELIVERY" },
-  { label: "💼 WORK ΓΙΑΝΝΑ", category: "WORK ΓΙΑΝΝΑ" },
-  { label: "💼 WORK ΧΡΗΣΤΟΣ", category: "WORK ΧΡΗΣΤΟΣ" },
-  { label: "👕 ΡΟΥΧΑ", category: "ΡΟΥΧΑ", full: true }
+const QUICK_CATEGORY_PREFERENCES = [
+  { internal: "SM", display: "SM", icon: "🛒" },
+  { internal: "DELIVERY", display: "Delivery", icon: "🍔" },
+  { internal: "WORK ΓΙΑΝΝΑ", display: "Work Γ", icon: "💼" },
+  { internal: "WORK ΧΡΗΣΤΟΣ", display: "Work Χ", icon: "💼" },
+  { internal: "ΡΟΥΧΑ", display: "Ρούχα", icon: "👕" }
 ];
+
 
 const APP_VERSION = "Sprint 1.3";
 const App = { data:null, state:{month:"", user:"", category:"SM", view:"home"}, els:{}, toastTimer:null };
@@ -216,35 +217,132 @@ function renderUsers(){
   });
 }
 
-function renderFavorites(){
-  App.els.favoriteButtons.innerHTML="";
-  FAVORITES.forEach(f=>{
-    if(!App.data.categories.some(c=>c.category===f.category)) return;
-    const b=document.createElement("button");
-    b.type="button";
-    b.className="quick-chip"+(f.category===App.state.category?" active":"");
-    const parts = String(f.label || f.category).split(" ");
-    const icon = parts[0] || "🧾";
-    const label = parts.slice(1).join(" ") || f.category;
-    b.innerHTML = `<span>${esc(icon)}</span><strong>${esc(label)}</strong>`;
-    b.addEventListener("click", ()=>{
-      setCategory(f.category);
-      setTimeout(()=>App.els.amountInput && App.els.amountInput.focus(), 50);
-    });
-    App.els.favoriteButtons.appendChild(b);
+function normalizeCategoryName(value){
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+function quickCategoryIcon(name){
+  const n = normalizeCategoryName(name);
+
+  if(n === "SM" || n.includes("SUPER MARKET")) return "🛒";
+  if(n.includes("DELIVERY")) return "🍔";
+  if(n.includes("WORK")) return "💼";
+  if(n.includes("ΡΟΥΧ") || n.includes("CLOTH")) return "👕";
+  if(n.includes("CAR") || n.includes("ΒΕΝΖ")) return "🚗";
+  if(n.includes("HAIR") || n.includes("NAIL")) return "💅";
+  if(n.includes("COSMOTE") || n.includes("VODAFONE")) return "📱";
+  if(n.includes("ADOBE")) return "🎨";
+
+  return "🧾";
+}
+
+function quickCategoryDisplayName(name){
+  const original = String(name || "").trim();
+  const n = normalizeCategoryName(original);
+
+  if(n === "SM" || n.includes("SUPER MARKET")) return "SM";
+  if(n.includes("DELIVERY")) return "Delivery";
+  if(n.includes("WORK") && n.includes("ΧΡΗΣΤ")) return "Work Χ";
+  if(n.includes("WORK") && n.includes("ΓΙΑΝΝ")) return "Work Γ";
+  if(n.includes("WORK")) return "Work";
+  if(n.includes("ΡΟΥΧ")) return "Ρούχα";
+  if(n.includes("HAIR") || n.includes("NAIL")) return "Hair";
+  if(n.includes("CAR")) return "Car";
+  if(n.includes("COSMOTE")) return "Cosmote";
+  if(n.includes("VODAFONE")) return "Vodafone";
+  if(n.includes("ADOBE")) return "Adobe";
+
+  return original.length > 10 ? original.slice(0, 9) + "…" : original;
+}
+
+function getQuickCategories(){
+  const categories = Array.isArray(App.data?.categories) ? App.data.categories : [];
+
+  const byNormalizedName = new Map();
+  categories.forEach(item => {
+    const actualName = String(item?.category || "").trim();
+    if(actualName) byNormalizedName.set(normalizeCategoryName(actualName), actualName);
   });
 
-  const more=document.createElement("button");
-  more.type="button";
-  more.className="quick-chip more-chip";
-  more.innerHTML="<span>•••</span><strong>More</strong>";
-  more.addEventListener("click", ()=>{
-    App.els.categorySelect.focus();
-    const adv=document.querySelector(".home-v2-advanced");
-    if(adv) adv.open=true;
+  const result = [];
+  const used = new Set();
+
+  QUICK_CATEGORY_PREFERENCES.forEach(pref => {
+    const actualName = byNormalizedName.get(normalizeCategoryName(pref.internal));
+    if(!actualName) return;
+
+    const key = normalizeCategoryName(actualName);
+    if(used.has(key)) return;
+
+    result.push({
+      category: actualName,
+      display: pref.display,
+      icon: pref.icon
+    });
+    used.add(key);
   });
+
+  // Fill any empty positions from the real category list.
+  categories.forEach(item => {
+    if(result.length >= 8) return;
+
+    const actualName = String(item?.category || "").trim();
+    const key = normalizeCategoryName(actualName);
+
+    if(!actualName || used.has(key)) return;
+
+    result.push({
+      category: actualName,
+      display: quickCategoryDisplayName(actualName),
+      icon: quickCategoryIcon(actualName)
+    });
+    used.add(key);
+  });
+
+  return result.slice(0, 8);
+}
+
+function renderFavorites(){
+  App.els.favoriteButtons.innerHTML = "";
+
+  const quickCategories = getQuickCategories();
+
+  quickCategories.forEach(item => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "quick-chip" +
+      (normalizeCategoryName(item.category) === normalizeCategoryName(App.state.category) ? " active" : "");
+
+    button.innerHTML = `<span>${esc(item.icon)}</span><strong>${esc(item.display)}</strong>`;
+
+    button.addEventListener("click", () => {
+      setCategory(item.category);
+      setTimeout(() => App.els.amountInput && App.els.amountInput.focus(), 50);
+    });
+
+    App.els.favoriteButtons.appendChild(button);
+  });
+
+  const more = document.createElement("button");
+  more.type = "button";
+  more.className = "quick-chip more-chip";
+  more.innerHTML = "<span>•••</span><strong>More</strong>";
+
+  more.addEventListener("click", () => {
+    const advanced = document.querySelector(".home-v2-advanced");
+    if(advanced) advanced.open = true;
+
+    setTimeout(() => App.els.categorySelect && App.els.categorySelect.focus(), 50);
+  });
+
   App.els.favoriteButtons.appendChild(more);
 }
+
 
 function getHistoryFilters(){
   const monthValue = App.els.historyMonthFilter ? App.els.historyMonthFilter.value : "current";
