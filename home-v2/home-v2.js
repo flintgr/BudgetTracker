@@ -332,3 +332,26 @@ async function load(){
 }
 
 load();
+
+
+const amountInput=document.querySelector('.amount-field input');
+const addBtn=document.querySelector('.add');
+
+function updateAddState(){
+  const v=parseFloat((amountInput.value||'').replace(',','.'))||0;
+  addBtn.disabled=v<=0;
+  addBtn.style.opacity=addBtn.disabled?'0.5':'1';
+}
+if(amountInput){
+ amountInput.addEventListener('focus',()=>amountInput.select());
+ amountInput.addEventListener('input',e=>{
+   e.target.value=e.target.value.replace(/[^0-9.,]/g,'');
+   updateAddState();
+ });
+ addBtn.disabled=true;
+ addBtn.addEventListener('click',()=>{
+   amountInput.value='';
+   updateAddState();
+   amountInput.focus();
+ });
+}
