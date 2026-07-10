@@ -337,16 +337,33 @@ load();
 const amountInput=document.querySelector('.amount-field input');
 const addBtn=document.querySelector('.add');
 
+function parseAmount(v){
+  return parseFloat(String(v).replace(/\./g,'').replace(',','.'))||0;
+}
+function formatAmount(v){
+  return new Intl.NumberFormat('el-GR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);
+}
 function updateAddState(){
-  const v=parseFloat((amountInput.value||'').replace(',','.'))||0;
+  const v=parseAmount(amountInput.value);
   addBtn.disabled=v<=0;
   addBtn.style.opacity=addBtn.disabled?'0.5':'1';
 }
 if(amountInput){
+ amountInput.setAttribute('inputmode','decimal');
  amountInput.addEventListener('focus',()=>amountInput.select());
  amountInput.addEventListener('input',e=>{
-   e.target.value=e.target.value.replace(/[^0-9.,]/g,'');
+   let t=e.target.value.replace(/[^0-9.,]/g,'');
+   const c=(t.match(/,/g)||[]).length;
+   if(c>1){
+     const i=t.indexOf(',');
+     t=t.slice(0,i+1)+t.slice(i+1).replace(/,/g,'');
+   }
+   e.target.value=t;
    updateAddState();
+ });
+ amountInput.addEventListener('blur',()=>{
+   const v=parseAmount(amountInput.value);
+   if(v>0) amountInput.value=formatAmount(v);
  });
  addBtn.disabled=true;
  addBtn.addEventListener('click',()=>{
