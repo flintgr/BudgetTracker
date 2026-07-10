@@ -2,16 +2,24 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Home V2 Phase 5 Integration</title>
+<title>Family Budget — Home V2 Phase 5.1</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
 <main class="app">
 <header class="header">
       <div><span>Family Budget</span><h1>Home</h1></div>
-      <div class="month-picker-v2">
-        <button id="monthPill" type="button">Loading...</button>
-        <div id="monthMenuV2" class="month-menu-v2 hidden"></div>
+
+      <div class="header-controls-v2">
+        <div class="user-picker-v2">
+          <button id="userPillV2" type="button">User</button>
+          <div id="userMenuV2" class="header-menu-v2 hidden"></div>
+        </div>
+
+        <div class="month-picker-v2">
+          <button id="monthPill" type="button">Loading...</button>
+          <div id="monthMenuV2" class="header-menu-v2 hidden"></div>
+        </div>
       </div>
     </header>
 
@@ -22,8 +30,47 @@
 </section>
 
 <section class="quick">
-<div class="title"><h2>Quick Categories</h2><button id="editQuickBtn" type="button">✎</button></div>
-<div id="quickCategories" class="chips"><button class="chip active"><span>…</span><strong>Loading</strong></button></div>
+  <div class="quick-tools-v2">
+    <button id="editQuickBtn" type="button" aria-label="Edit quick categories">✎</button>
+  </div>
+  <div id="quickCategories" class="chips">
+    <button class="chip active"><span>…</span><strong>Loading</strong></button>
+  </div>
+</section>
+
+<details class="all-categories-v2">
+  <summary>All Categories</summary>
+  <div class="all-categories-content-v2">
+    <select id="categorySelectV2"></select>
+  </div>
+</details>
+
+<section id="categoryStatusCardV2" class="category-status-v2">
+  <div class="category-status-head-v2">
+    <div>
+      <span>Selected</span>
+      <strong id="selectedCategoryNameV2">—</strong>
+    </div>
+    <div class="category-balance-v2">
+      <span>Balance</span>
+      <strong id="categoryBalanceV2">€0.00</strong>
+    </div>
+  </div>
+
+  <div class="category-progress-track-v2">
+    <div id="categoryProgressFillV2" class="category-progress-fill-v2"></div>
+  </div>
+
+  <div class="category-stats-v2">
+    <div>
+      <span>Budget</span>
+      <strong id="categoryBudgetV2">€0.00</strong>
+    </div>
+    <div>
+      <span>Spent</span>
+      <strong id="categorySpentV2">€0.00</strong>
+    </div>
+  </div>
 </section>
 
 <section class="amount">
@@ -32,15 +79,7 @@
 <button id="addExpenseBtnV2" class="add" type="button"><span>＋</span>Add Expense</button>
 </section>
 
-<details class="advanced">
-      <summary>Advanced</summary>
-      <div class="advanced-content">
-        <div id="userButtonsV2" class="user-grid-v2"></div>
-        <select id="categorySelectV2"></select>
-      </div>
-    </details>
-
-    <div id="homeMessage" class="home-message hidden"></div>
+<div id="homeMessage" class="home-message hidden"></div>
 
 </div>
 

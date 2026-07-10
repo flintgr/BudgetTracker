@@ -278,9 +278,8 @@ function renderMonths(){
 }
 
 function renderUsers(){
-  const container = $("userButtonsV2");
-  container.innerHTML = "";
-
+  const pill = $("userPillV2");
+  const menu = $("userMenuV2");
   const users = Array.isArray(appData?.users) ? appData.users : [];
 
   if(!activeUser && users.length){
@@ -288,21 +287,68 @@ function renderUsers(){
     localStorage.setItem(USER_STORAGE_KEY, activeUser);
   }
 
+  pill.textContent = activeUser || "User";
+  menu.innerHTML = "";
+
   users.forEach(user => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "user" + (user === activeUser ? " active" : "");
     button.textContent = user;
+    button.className = user === activeUser ? "active" : "";
 
     button.addEventListener("click", async () => {
+      menu.classList.add("hidden");
       if(user === activeUser) return;
+
       activeUser = user;
       localStorage.setItem(USER_STORAGE_KEY, activeUser);
       await loadData();
     });
 
-    container.appendChild(button);
+    menu.appendChild(button);
   });
+}
+
+function getSelectedCategoryData(){
+  const categories = Array.isArray(appData?.categories) ? appData.categories : [];
+  return categories.find(item =>
+    normalizeName(item?.category) === normalizeName(selectedCategory)
+  ) || null;
+}
+
+function renderCategoryStatus(){
+  const item = getSelectedCategoryData();
+
+  if(!item){
+    $("selectedCategoryNameV2").textContent = selectedCategory || "—";
+    $("categoryBudgetV2").textContent = money(0);
+    $("categorySpentV2").textContent = money(0);
+    $("categoryBalanceV2").textContent = money(0);
+    $("categoryProgressFillV2").style.width = "0%";
+    $("categoryProgressFillV2").className = "category-progress-fill-v2";
+    return;
+  }
+
+  const budget = Number(item.budget) || 0;
+  const spent = Number(item.totalSpent) || 0;
+  const balance = Number(item.balance);
+  const safeBalance = Number.isFinite(balance) ? balance : budget - spent;
+  const percent = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
+
+  $("selectedCategoryNameV2").textContent = displayName(item.category);
+  $("categoryBudgetV2").textContent = money(budget);
+  $("categorySpentV2").textContent = money(spent);
+  $("categoryBalanceV2").textContent = money(safeBalance);
+
+  const fill = $("categoryProgressFillV2");
+  fill.style.width = percent + "%";
+  fill.className = "category-progress-fill-v2";
+
+  if(percent >= 90){
+    fill.classList.add("danger");
+  }else if(percent >= 70){
+    fill.classList.add("warning");
+  }
 }
 
 function renderCategorySelect(){
@@ -362,6 +408,7 @@ function renderQuickCategories(){
       localStorage.setItem(LAST_CATEGORY_KEY, selectedCategory);
       renderQuickCategories();
       renderCategorySelect();
+      renderCategoryStatus();
       $("amountInputV2").focus();
     });
 
@@ -490,7 +537,7 @@ function openStableView(view){
   localStorage.setItem("budgetTrackerRequestedView", view);
   localStorage.setItem(USER_STORAGE_KEY, activeUser);
   localStorage.setItem(MONTH_STORAGE_KEY, activeMonth);
-  window.location.href = "../?v=phase5-integration";
+  window.location.href = "../?v=phase5-1-layout";
 }
 
 function openSettings(){
@@ -518,8 +565,15 @@ function bindUi(){
   $("historyNavBtn").addEventListener("click", () => openStableView("transactions"));
   $("dashboardNavBtn").addEventListener("click", () => openStableView("dashboard"));
 
+  $("userPillV2").addEventListener("click", event => {
+    event.stopPropagation();
+    $("monthMenuV2").classList.add("hidden");
+    $("userMenuV2").classList.toggle("hidden");
+  });
+
   $("monthPill").addEventListener("click", event => {
     event.stopPropagation();
+    $("userMenuV2").classList.add("hidden");
     $("monthMenuV2").classList.toggle("hidden");
   });
 
@@ -527,12 +581,17 @@ function bindUi(){
     if(!event.target.closest(".month-picker-v2")){
       $("monthMenuV2").classList.add("hidden");
     }
+
+    if(!event.target.closest(".user-picker-v2")){
+      $("userMenuV2").classList.add("hidden");
+    }
   });
 
   $("categorySelectV2").addEventListener("change", event => {
     selectedCategory = event.target.value;
     localStorage.setItem(LAST_CATEGORY_KEY, selectedCategory);
     renderQuickCategories();
+    renderCategoryStatus();
   });
 
   const amountInput = $("amountInputV2");
@@ -581,6 +640,7 @@ async function loadData(){
   renderUsers();
   renderCategorySelect();
   renderQuickCategories();
+  renderCategoryStatus();
   renderQuickCategorySettings();
 }
 
