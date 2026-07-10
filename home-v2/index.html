@@ -2,21 +2,21 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Home V2 Phase 3.1</title>
+<title>Family Budget — Home V2 Phase 3.1 Configurable</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
 <main class="app">
 <header class="header"><div><span>Family Budget</span><h1>Home</h1></div><button id="monthPill">Loading...</button></header>
 
-<section class="summary">
+<div id="homeView"><section class="summary">
 <article class="card income"><i></i><div class="icon">⌄</div><strong id="incomeValue">€0.00</strong><span>Income</span><small>Monthly income</small></article>
 <article class="card expenses"><i></i><div class="icon">◇</div><strong id="expensesValue">€0.00</strong><span>Expenses</span><small id="expensesMeta">0% of income</small></article>
 <article class="card available"><i></i><div class="icon">▣</div><strong id="availableValue">€0.00</strong><span>Available</span><small id="availableMeta">0% remaining</small></article>
 </section>
 
 <section class="quick">
-<div class="title"><h2>Quick Categories</h2><button>✎</button></div>
+<div class="title"><h2>Quick Categories</h2><button id="editQuickBtn" type="button">✎</button></div>
 <div id="quickCategories" class="chips"><button class="chip active"><span>…</span><strong>Loading</strong></button></div>
 </section>
 
@@ -32,7 +32,26 @@
 <select><option>SM</option><option>DELIVERY</option><option>WORK ΧΡΗΣΤΟΣ</option></select>
 </div></details>
 
-<nav><button class="active">⌂<span>Home</span></button><button>☷<span>History</span></button><button>▤<span>Dashboard</span></button><button>⚙<span>Settings</span></button></nav>
+</div>
+
+    <section id="settingsView" class="settings-view hidden">
+      <div class="settings-head">
+        <div>
+          <span>Home V2</span>
+          <h2>Quick Categories</h2>
+        </div>
+        <button id="closeSettingsBtn" type="button">Done</button>
+      </div>
+      <p>Select up to 8 categories. Changes are saved on this device.</p>
+      <div id="quickCategorySettings" class="settings-list"></div>
+    </section>
+
+    <nav>
+      <button id="homeNavBtn" class="active" type="button">⌂<span>Home</span></button>
+      <button type="button">☷<span>History</span></button>
+      <button type="button">▤<span>Dashboard</span></button>
+      <button id="settingsNavBtn" type="button">⚙<span>Settings</span></button>
+    </nav>
 </main>
 <script src="config.js"></script>
 <script src="home-v2.js"></script>

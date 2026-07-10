@@ -25,3 +25,102 @@
 .advanced-content{display:grid;gap:10px;padding:14px}.user,select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:15px;background:#fff;color:var(--text);font-weight:850;padding:0 14px}.user.active{background:#ecfdf3;color:#087531;border-color:var(--green)}
 nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(430px,100vw);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.94);border-top:1px solid var(--line);backdrop-filter:blur(18px)}
 nav button{min-height:50px;border:0;border-radius:16px;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:18px}nav button span{font-size:11px;font-weight:850}nav button.active{background:#ede9fe;color:var(--purple)}
+
+
+/* Phase 3.1 — Configurable Quick Categories */
+.hidden{display:none!important}
+
+.settings-view{
+  padding:18px 14px 110px;
+  min-height:calc(100vh - 80px);
+  background:linear-gradient(180deg,#fff 0%,var(--bg) 100%);
+}
+
+.settings-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:8px;
+}
+
+.settings-head span{
+  color:var(--muted);
+  font-size:11px;
+  font-weight:850;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.settings-head h2{
+  margin:2px 0 0;
+  font-size:30px;
+  letter-spacing:-.8px;
+}
+
+.settings-head button{
+  border:0;
+  border-radius:999px;
+  padding:10px 16px;
+  background:#ede9fe;
+  color:var(--purple);
+  font-weight:900;
+}
+
+.settings-view>p{
+  margin:0 0 16px;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.45;
+}
+
+.settings-list{
+  display:grid;
+  gap:10px;
+}
+
+.settings-category{
+  min-height:58px;
+  display:grid;
+  grid-template-columns:42px 1fr auto;
+  align-items:center;
+  gap:12px;
+  padding:9px 12px;
+  border:1px solid var(--line);
+  border-radius:17px;
+  background:#fff;
+  box-shadow:0 8px 22px rgba(16,24,40,.05);
+}
+
+.settings-category .settings-icon{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:#f8fafc;
+  font-size:22px;
+}
+
+.settings-category strong{
+  display:block;
+  font-size:14px;
+  line-height:1.2;
+}
+
+.settings-category small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:11px;
+}
+
+.settings-category input{
+  width:22px;
+  height:22px;
+  accent-color:var(--green);
+}
+
+.settings-category.disabled{
+  opacity:.48;
+}
