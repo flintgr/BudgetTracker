@@ -435,3 +435,7 @@ nav button{min-height:50px;border:0;border-radius:16px;background:transparent;co
     font-size:11px;
   }
 }
+
+/* Phase 5.2 — Clean Amount */
+.amount{padding-top:16px}
+.amount-field{margin-top:0}
