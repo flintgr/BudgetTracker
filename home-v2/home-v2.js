@@ -72,6 +72,46 @@ function api(params){
   });
 }
 
+
+function normalizeMonthKeyV2(value){
+  const raw = String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[._-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+
+  const yearMatch = raw.match(/20\d{2}/);
+  const year = yearMatch ? yearMatch[0] : "";
+
+  const monthMap = [
+    { key:"JAN", aliases:["JAN","JANUARY","ΙΑΝ","ΙΑΝΟΥΑΡΙΟΣ","ΙΑΝΟΥΑΡΙΟΥ"] },
+    { key:"FEB", aliases:["FEB","FEBRUARY","ΦΕΒ","ΦΕΒΡΟΥΑΡΙΟΣ","ΦΕΒΡΟΥΑΡΙΟΥ"] },
+    { key:"MAR", aliases:["MAR","MARCH","ΜΑΡ","ΜΑΡΤΙΟΣ","ΜΑΡΤΙΟΥ"] },
+    { key:"APR", aliases:["APR","APRIL","ΑΠΡ","ΑΠΡΙΛΙΟΣ","ΑΠΡΙΛΙΟΥ"] },
+    { key:"MAY", aliases:["MAY","ΜΑΙ","ΜΑΙΟΣ","ΜΑΙΟΥ"] },
+    { key:"JUN", aliases:["JUN","JUNE","ΙΟΥΝ","ΙΟΥΝΙΟΣ","ΙΟΥΝΙΟΥ"] },
+    { key:"JUL", aliases:["JUL","JULY","ΙΟΥΛ","ΙΟΥΛΙΟΣ","ΙΟΥΛΙΟΥ"] },
+    { key:"AUG", aliases:["AUG","AUGUST","ΑΥΓ","ΑΥΓΟΥΣΤΟΣ","ΑΥΓΟΥΣΤΟΥ"] },
+    { key:"SEP", aliases:["SEP","SEPT","SEPTEMBER","ΣΕΠ","ΣΕΠΤΕΜΒΡΙΟΣ","ΣΕΠΤΕΜΒΡΙΟΥ"] },
+    { key:"OCT", aliases:["OCT","OCTOBER","ΟΚΤ","ΟΚΤΩΒΡΙΟΣ","ΟΚΤΩΒΡΙΟΥ"] },
+    { key:"NOV", aliases:["NOV","NOVEMBER","ΝΟΕ","ΝΟΕΜΒΡΙΟΣ","ΝΟΕΜΒΡΙΟΥ"] },
+    { key:"DEC", aliases:["DEC","DECEMBER","ΔΕΚ","ΔΕΚΕΜΒΡΙΟΣ","ΔΕΚΕΜΒΡΙΟΥ"] }
+  ];
+
+  let month = "";
+
+  for(const entry of monthMap){
+    if(entry.aliases.some(alias => raw.includes(alias))){
+      month = entry.key;
+      break;
+    }
+  }
+
+  return year && month ? year + " " + month : raw;
+}
+
 function normalizeName(value){
   return String(value || "")
     .normalize("NFD")
@@ -1123,8 +1163,10 @@ async function loadHistoryV2(){
     let items = Array.isArray(response.transactions) ? response.transactions : [];
 
     if(filters.month === "current"){
+      const activeMonthKey = normalizeMonthKeyV2(activeMonth);
+
       items = items.filter(item =>
-        normalizeName(item.month) === normalizeName(activeMonth)
+        normalizeMonthKeyV2(item.month) === activeMonthKey
       );
     }
 
