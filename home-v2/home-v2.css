@@ -439,3 +439,223 @@ nav button{min-height:50px;border:0;border-radius:16px;background:transparent;co
 /* Phase 5.2 — Clean Amount */
 .amount{padding-top:16px}
 .amount-field{margin-top:0}
+
+
+/* Phase 6 — History V2 */
+.history-view-v2{
+  padding:14px 14px 108px;
+  min-height:calc(100vh - 82px);
+  background:linear-gradient(180deg,#ffffff 0%,var(--bg) 100%);
+}
+
+.history-hero-v2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.history-hero-v2>div{
+  min-height:118px;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:24px;
+  background:#fff;
+  box-shadow:var(--shadow);
+}
+
+.history-hero-v2>div:first-child{
+  background:linear-gradient(180deg,#f5f3ff 0%,#fff 100%);
+}
+
+.history-hero-v2>div:last-child{
+  background:linear-gradient(180deg,#eff6ff 0%,#fff 100%);
+}
+
+.history-hero-v2 span{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+
+.history-hero-v2 strong{
+  display:block;
+  margin-top:12px;
+  color:var(--text);
+  font-size:30px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:-.9px;
+}
+
+.history-controls-v2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.history-controls-v2 label{
+  display:grid;
+  gap:6px;
+}
+
+.history-controls-v2 label span{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:900;
+}
+
+.history-controls-v2 select{
+  width:100%;
+  min-height:48px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:#fff;
+  color:var(--text);
+  padding:0 12px;
+  font-size:14px;
+  font-weight:850;
+  box-shadow:0 8px 20px rgba(16,24,40,.04);
+}
+
+.history-controls-v2>button{
+  grid-column:1 / -1;
+  min-height:48px;
+  border:0;
+  border-radius:15px;
+  background:#ede9fe;
+  color:var(--purple);
+  font-size:15px;
+  font-weight:950;
+}
+
+.history-status-v2{
+  margin:4px 0 12px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  text-align:center;
+}
+
+.history-list-v2{
+  display:grid;
+  gap:10px;
+}
+
+.history-item-v2{
+  display:grid;
+  grid-template-columns:46px 1fr auto;
+  gap:12px;
+  align-items:center;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 10px 26px rgba(16,24,40,.05);
+}
+
+.history-icon-v2{
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:#f8fafc;
+  font-size:23px;
+}
+
+.history-main-v2{
+  min-width:0;
+}
+
+.history-main-v2 strong{
+  display:block;
+  overflow:hidden;
+  color:var(--text);
+  font-size:15px;
+  font-weight:950;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.history-meta-v2{
+  display:block;
+  margin-top:5px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:800;
+  line-height:1.35;
+}
+
+.history-action-v2{
+  display:inline-flex;
+  align-items:center;
+  margin-top:7px;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:950;
+  text-transform:uppercase;
+}
+
+.history-action-v2.added{
+  background:#ecfdf3;
+  color:#087531;
+}
+
+.history-action-v2.undo,
+.history-action-v2.undone{
+  background:#fff7ed;
+  color:#b54708;
+}
+
+.history-side-v2{
+  text-align:right;
+}
+
+.history-side-v2 strong{
+  display:block;
+  color:var(--text);
+  font-size:17px;
+  font-weight:950;
+  white-space:nowrap;
+}
+
+.history-delete-v2{
+  width:auto;
+  min-height:32px;
+  margin-top:7px;
+  padding:0 10px;
+  border:1px solid #fecaca;
+  border-radius:11px;
+  background:#fff1f2;
+  color:#b42318;
+  font-size:11px;
+  font-weight:900;
+}
+
+.history-empty-v2{
+  padding:22px 16px;
+  border:1px dashed #d0d5dd;
+  border-radius:20px;
+  background:#fff;
+  color:var(--muted);
+  font-size:14px;
+  font-weight:850;
+  text-align:center;
+}
+
+@media (max-width:370px){
+  .history-item-v2{
+    grid-template-columns:42px 1fr;
+  }
+
+  .history-side-v2{
+    grid-column:2;
+    text-align:left;
+  }
+}

@@ -2,13 +2,13 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Home V2 Phase 5.2</title>
+<title>Family Budget — Phase 6 History V2</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
 <main class="app">
 <header class="header">
-      <div><span>Family Budget</span><h1>Home</h1></div>
+      <div><span>Family Budget</span><h1 id="pageTitleV2">Home</h1></div>
 
       <div class="header-controls-v2">
         <div class="user-picker-v2">
@@ -83,7 +83,38 @@
 
 </div>
 
-    <section id="settingsView" class="settings-view hidden">
+    
+    <section id="historyViewV2" class="history-view-v2 hidden">
+      <section class="history-hero-v2">
+        <div>
+          <span>Transactions</span>
+          <strong id="historyCountV2">0</strong>
+        </div>
+        <div>
+          <span>Total</span>
+          <strong id="historyTotalV2">€0.00</strong>
+        </div>
+      </section>
+
+      <section class="history-controls-v2">
+        <label>
+          <span>Month</span>
+          <select id="historyMonthFilterV2"></select>
+        </label>
+
+        <label>
+          <span>User</span>
+          <select id="historyUserFilterV2"></select>
+        </label>
+
+        <button id="refreshHistoryBtnV2" type="button">Refresh</button>
+      </section>
+
+      <div id="historyStatusV2" class="history-status-v2">History is ready.</div>
+      <div id="historyListV2" class="history-list-v2"></div>
+    </section>
+
+<section id="settingsView" class="settings-view hidden">
       <div class="settings-head">
         <div>
           <span>Home V2</span>

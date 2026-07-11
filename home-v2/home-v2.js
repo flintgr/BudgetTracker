@@ -533,6 +533,182 @@ async function submitExpense(){
   }
 }
 
+
+function addSelectOption(select, value, label){
+  const option = document.createElement("option");
+  option.value = value;
+  option.textContent = label;
+  select.appendChild(option);
+}
+
+function renderHistoryFiltersV2(){
+  const monthSelect = $("historyMonthFilterV2");
+  const userSelect = $("historyUserFilterV2");
+
+  const previousMonth = monthSelect.value || "current";
+  const previousUser = userSelect.value || "current";
+
+  monthSelect.innerHTML = "";
+  addSelectOption(monthSelect, "current", "Current Month");
+  addSelectOption(monthSelect, "", "All Months");
+  (appData?.availableMonths || []).forEach(month => addSelectOption(monthSelect, month, month));
+
+  userSelect.innerHTML = "";
+  addSelectOption(userSelect, "current", "Current User");
+  addSelectOption(userSelect, "", "All Users");
+  (appData?.users || []).forEach(user => addSelectOption(userSelect, user, user));
+
+  monthSelect.value = [...monthSelect.options].some(option => option.value === previousMonth)
+    ? previousMonth
+    : "current";
+
+  userSelect.value = [...userSelect.options].some(option => option.value === previousUser)
+    ? previousUser
+    : "current";
+}
+
+function getHistoryFiltersV2(){
+  const monthValue = $("historyMonthFilterV2").value;
+  const userValue = $("historyUserFilterV2").value;
+
+  return {
+    month: monthValue === "current" ? activeMonth : monthValue,
+    user: userValue === "current" ? activeUser : userValue
+  };
+}
+
+function formatHistoryDateV2(value){
+  if(!value) return "";
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return String(value);
+
+  return date.toLocaleDateString("el-GR", {
+    day:"2-digit",
+    month:"short",
+    year:"numeric"
+  }) + " · " + date.toLocaleTimeString("el-GR", {
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+}
+
+function updateHistorySummaryV2(items){
+  const total = items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  $("historyCountV2").textContent = String(items.length);
+  $("historyTotalV2").textContent = money(total);
+}
+
+function renderHistoryItemsV2(items){
+  const list = $("historyListV2");
+  list.innerHTML = "";
+
+  if(!items.length){
+    list.innerHTML = '<div class="history-empty-v2">No transactions for the selected filters.</div>';
+    return;
+  }
+
+  items.forEach(transaction => {
+    const action = String(transaction.action || "Added");
+    const actionClass = action.toLowerCase().replace(/\s+/g, "-");
+
+    const row = document.createElement("article");
+    row.className = "history-item-v2";
+    row.innerHTML = `
+      <div class="history-icon-v2">${categoryIcon(transaction.category)}</div>
+
+      <div class="history-main-v2">
+        <strong>${escapeHtml(transaction.category)}</strong>
+        <span class="history-meta-v2">
+          ${escapeHtml(transaction.user)} · ${escapeHtml(transaction.month)}<br>
+          ${escapeHtml(formatHistoryDateV2(transaction.date))}
+        </span>
+        <span class="history-action-v2 ${escapeHtml(actionClass)}">${escapeHtml(action)}</span>
+      </div>
+
+      <div class="history-side-v2">
+        <strong>${money(transaction.amount)}</strong>
+        <button class="history-delete-v2 ${transaction.canDelete ? "" : "hidden"}" type="button">Delete</button>
+      </div>
+    `;
+
+    const deleteButton = row.querySelector(".history-delete-v2");
+    if(deleteButton && transaction.canDelete){
+      deleteButton.addEventListener("click", () => deleteHistoryTransactionV2(transaction));
+    }
+
+    list.appendChild(row);
+  });
+}
+
+async function loadHistoryV2(){
+  const status = $("historyStatusV2");
+  const list = $("historyListV2");
+  const filters = getHistoryFiltersV2();
+
+  status.textContent = "Loading history...";
+  list.innerHTML = '<div class="history-empty-v2">Loading...</div>';
+
+  try{
+    const response = await api({
+      action:"getTransactions",
+      month:filters.month || "",
+      user:filters.user || ""
+    });
+
+    const items = Array.isArray(response.transactions) ? response.transactions : [];
+    updateHistorySummaryV2(items);
+    renderHistoryItemsV2(items);
+    status.textContent = items.length + " ledger rows";
+  }catch(error){
+    updateHistorySummaryV2([]);
+    list.innerHTML = '<div class="history-empty-v2">History could not load.</div>';
+    status.textContent = "Error: " + error.message;
+  }
+}
+
+async function deleteHistoryTransactionV2(transaction){
+  const approved = window.confirm(
+    "Delete " + money(transaction.amount) + " from " + transaction.category + "?"
+  );
+
+  if(!approved) return;
+
+  try{
+    await api({
+      action:"deleteTransaction",
+      id:transaction.id
+    });
+
+    showMessage("Transaction deleted.", "success");
+    await loadData();
+    await loadHistoryV2();
+  }catch(error){
+    showMessage(error.message, "error", 3500);
+  }
+}
+
+function setActiveMainViewV2(viewName){
+  $("homeView").classList.toggle("hidden", viewName !== "home");
+  $("historyViewV2").classList.toggle("hidden", viewName !== "history");
+  $("settingsView").classList.toggle("hidden", viewName !== "settings");
+
+  $("homeNavBtn").classList.toggle("active", viewName === "home");
+  $("historyNavBtn").classList.toggle("active", viewName === "history");
+  $("settingsNavBtn").classList.toggle("active", viewName === "settings");
+  $("dashboardNavBtn").classList.remove("active");
+
+  $("pageTitleV2").textContent =
+    viewName === "history" ? "History" :
+    viewName === "settings" ? "Quick Categories" :
+    "Home";
+}
+
+async function openHistoryV2(){
+  setActiveMainViewV2("history");
+  renderHistoryFiltersV2();
+  await loadHistoryV2();
+}
+
 function openStableView(view){
   localStorage.setItem("budgetTrackerRequestedView", view);
   localStorage.setItem(USER_STORAGE_KEY, activeUser);
@@ -541,18 +717,12 @@ function openStableView(view){
 }
 
 function openSettings(){
-  $("homeView").classList.add("hidden");
-  $("settingsView").classList.remove("hidden");
-  $("homeNavBtn").classList.remove("active");
-  $("settingsNavBtn").classList.add("active");
+  setActiveMainViewV2("settings");
   renderQuickCategorySettings();
 }
 
 function closeSettings(){
-  $("settingsView").classList.add("hidden");
-  $("homeView").classList.remove("hidden");
-  $("settingsNavBtn").classList.remove("active");
-  $("homeNavBtn").classList.add("active");
+  setActiveMainViewV2("home");
   renderQuickCategories();
 }
 
@@ -562,8 +732,12 @@ function bindUi(){
   $("homeNavBtn").addEventListener("click", closeSettings);
   $("closeSettingsBtn").addEventListener("click", closeSettings);
 
-  $("historyNavBtn").addEventListener("click", () => openStableView("transactions"));
+  $("historyNavBtn").addEventListener("click", openHistoryV2);
   $("dashboardNavBtn").addEventListener("click", () => openStableView("dashboard"));
+
+  $("historyMonthFilterV2").addEventListener("change", loadHistoryV2);
+  $("historyUserFilterV2").addEventListener("change", loadHistoryV2);
+  $("refreshHistoryBtnV2").addEventListener("click", loadHistoryV2);
 
   $("userPillV2").addEventListener("click", event => {
     event.stopPropagation();
@@ -642,6 +816,7 @@ async function loadData(){
   renderQuickCategories();
   renderCategoryStatus();
   renderQuickCategorySettings();
+  renderHistoryFiltersV2();
 }
 
 async function load(){
