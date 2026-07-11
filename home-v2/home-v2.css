@@ -1219,3 +1219,212 @@ nav button{min-height:50px;border:0;border-radius:16px;background:transparent;co
     height:38px;
   }
 }
+
+
+/* Phase 10 — Calm Finance Theme
+   Primary #0A84FF
+   Green   #32D74B
+   Orange  #FF9F0A
+   Red     #FF453A
+   BG      #F2F4F7
+   Text    #111827
+*/
+:root{
+  --bg:#F2F4F7;
+  --surface:#FFFFFF;
+  --text:#111827;
+  --muted:#667085;
+  --line:#D9E0E8;
+  --purple:#0A84FF;
+  --green:#32D74B;
+  --red:#FF453A;
+  --shadow:0 12px 30px rgba(17,24,39,.08);
+}
+
+body{
+  background:#F2F4F7;
+  color:#111827;
+}
+
+.header,
+nav{
+  background:rgba(255,255,255,.94);
+  border-color:#D9E0E8;
+}
+
+.header>div:first-child>span{
+  color:#667085;
+}
+
+.user-picker-v2>button,
+.month-picker-v2>button{
+  background:#FFFFFF;
+  border-color:#D9E0E8;
+  color:#111827;
+}
+
+.header-menu-v2 button.active{
+  background:#EAF4FF;
+  color:#0066CC;
+}
+
+.summary .card{
+  border-color:#D9E0E8;
+}
+
+.card.income{
+  background:linear-gradient(180deg,#ECFDF3 0%,#FFFFFF 100%);
+}
+
+.card.expenses{
+  background:linear-gradient(180deg,#FFF7ED 0%,#FFFFFF 100%);
+}
+
+.card.available{
+  background:linear-gradient(180deg,#EFF6FF 0%,#FFFFFF 100%);
+}
+
+.card.income span,
+.card.income small{
+  color:#16803B;
+}
+
+.card.expenses span,
+.card.expenses small{
+  color:#C65D00;
+}
+
+.card.available span,
+.card.available small{
+  color:#0066CC;
+}
+
+.quick-tools-v2 button,
+.dashboard-overview-head-v2 button,
+.history-controls-v2>button{
+  background:#EAF4FF;
+  color:#0066CC;
+}
+
+.chip.active{
+  border-color:#0A84FF;
+  background:#EFF6FF;
+  box-shadow:0 0 0 2px rgba(10,132,255,.12);
+}
+
+.chip.active strong{
+  color:#0066CC;
+}
+
+.all-categories-v2 summary,
+.settings-menu-v2 summary{
+  background:#F8FAFC;
+  color:#111827;
+}
+
+.category-progress-fill-v2,
+.dashboard-progress-fill-v2,
+.dashboard-category-progress-v2>div{
+  background:#32D74B;
+}
+
+.category-progress-fill-v2.warning,
+.dashboard-progress-fill-v2.warning,
+.dashboard-category-progress-v2>div.warning{
+  background:#FF9F0A !important;
+}
+
+.category-progress-fill-v2.danger,
+.dashboard-progress-fill-v2.danger,
+.dashboard-category-progress-v2>div.danger{
+  background:#FF453A !important;
+}
+
+.add,
+.save-income-btn-v2,
+.save-budgets-btn-v2{
+  background:linear-gradient(135deg,#0A84FF,#0066CC);
+  box-shadow:0 12px 24px rgba(10,132,255,.20);
+}
+
+.home-message.success{
+  background:#16803B;
+}
+
+.home-message.error{
+  background:#D92D20;
+}
+
+nav button.active{
+  background:#EAF4FF;
+  color:#0066CC;
+}
+
+nav button.active span{
+  color:#0066CC;
+}
+
+.dashboard-card-v2.income{
+  background:linear-gradient(180deg,#ECFDF3 0%,#FFFFFF 100%);
+}
+
+.dashboard-card-v2.expenses{
+  background:linear-gradient(180deg,#FFF7ED 0%,#FFFFFF 100%);
+}
+
+.dashboard-card-v2.available{
+  background:linear-gradient(180deg,#EFF6FF 0%,#FFFFFF 100%);
+}
+
+.income-editor-v2 .dashboard-section-title-v2 strong{
+  color:#16803B;
+}
+
+.month-action-v2.create{
+  border-color:#86EFAC;
+  background:#F0FDF4;
+  color:#16803B;
+}
+
+.month-action-v2.clear{
+  border-color:#FED7AA;
+  background:#FFF7ED;
+  color:#C65D00;
+}
+
+.month-action-v2.delete,
+.history-delete-v2{
+  border-color:#FECDCA;
+  background:#FFF1F0;
+  color:#D92D20;
+}
+
+.donut-segment-v2.christos{
+  stroke:#0A84FF;
+}
+
+.donut-segment-v2.gianna{
+  stroke:#FF9F0A;
+}
+
+.person-icon-v2.man,
+.dot-v2.christos{
+  color:#0A84FF;
+}
+
+.dot-v2.christos{
+  background:#0A84FF;
+}
+
+.person-icon-v2.woman,
+.dot-v2.gianna{
+  color:#FF9F0A;
+}
+
+.dot-v2.gianna{
+  background:#FF9F0A;
+}
+
+.settings-category input{
+  accent-color:#0A84FF;
+}
