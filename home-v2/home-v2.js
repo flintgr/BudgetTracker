@@ -971,7 +971,9 @@ function renderHistoryFiltersV2(){
   const userSelect = $("historyUserFilterV2");
 
   const previousMonth = monthSelect.value || "current";
-  const previousUser = userSelect.value || "current";
+  const previousUser = userSelect.dataset.initialized === "true"
+    ? userSelect.value
+    : "";
 
   monthSelect.innerHTML = "";
   addSelectOption(monthSelect, "current", "Current Month");
@@ -989,7 +991,9 @@ function renderHistoryFiltersV2(){
 
   userSelect.value = [...userSelect.options].some(option => option.value === previousUser)
     ? previousUser
-    : "current";
+    : "";
+
+  userSelect.dataset.initialized = "true";
 }
 
 function getHistoryFiltersV2(){
