@@ -456,6 +456,62 @@ function renderMonthManagementV2(){
   select.value = months.includes(previous) ? previous : (activeMonth || months[0] || "");
 }
 
+
+async function createNextMonthV2(){
+  const months = Array.isArray(appData?.availableMonths) ? appData.availableMonths : [];
+  const fromMonth = months.length ? months[months.length - 1] : activeMonth;
+
+  if(!fromMonth) return;
+
+  const approved = window.confirm(
+    "Create the next month after " + fromMonth + "?\n\nBudgets and Income Sources will be copied. Spent will start at 0."
+  );
+
+  if(!approved) return;
+
+  const button = $("createNextMonthBtnV2");
+  button.disabled = true;
+  button.textContent = "Creating...";
+
+  try{
+    const result = await api({
+      action:"createNextMonth",
+      fromMonth
+    });
+
+    const createdMonth =
+      result.createdMonth ||
+      result.month ||
+      result.newMonth ||
+      "";
+
+    if(createdMonth){
+      activeMonth = createdMonth;
+      localStorage.setItem(MONTH_STORAGE_KEY, activeMonth);
+    }
+
+    await loadData();
+
+    if(!createdMonth){
+      const refreshedMonths = Array.isArray(appData?.availableMonths)
+        ? appData.availableMonths
+        : [];
+      activeMonth = refreshedMonths[refreshedMonths.length - 1] || activeMonth;
+      localStorage.setItem(MONTH_STORAGE_KEY, activeMonth);
+      await loadData();
+    }
+
+    renderMonthManagementV2();
+    showMessage(activeMonth + " was created.", "success", 2200);
+    setActiveMainViewV2("home");
+  }catch(error){
+    showMessage(error.message, "error", 3500);
+  }finally{
+    button.disabled = false;
+    button.textContent = "Create Next Month";
+  }
+}
+
 async function clearMonthDataV2(){
   const month = $("monthManagementSelectV2").value;
   if(!month) return;
@@ -1052,6 +1108,7 @@ function bindUi(){
     $(id).addEventListener("input", updateIncomeEditorTotalV2);
   });
   $("saveIncomeSourcesBtnV2").addEventListener("click", saveIncomeSourcesV2);
+  $("createNextMonthBtnV2").addEventListener("click", createNextMonthV2);
   $("clearMonthBtnV2").addEventListener("click", clearMonthDataV2);
   $("deleteMonthBtnV2").addEventListener("click", deleteMonthV2);
 

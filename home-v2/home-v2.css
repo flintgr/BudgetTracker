@@ -1029,3 +1029,15 @@ nav button{min-height:50px;border:0;border-radius:16px;background:transparent;co
   font-weight:750;
   line-height:1.45;
 }
+
+
+/* Phase 9.1 — Create Next Month */
+.month-action-v2.create{
+  border:1px solid #86efac;
+  background:#f0fdf4;
+  color:#087531;
+}
+
+.month-action-v2.create:active{
+  transform:scale(.985);
+}
