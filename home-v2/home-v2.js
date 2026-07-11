@@ -555,16 +555,19 @@ let userSpendingV2 = {
   total: 0
 };
 
-function userSpendingAmountV2(name){
+function userSpendingAmountV2(names){
+  const wanted = (Array.isArray(names) ? names : [names]).map(normalizeName);
+
   const item = (userSpendingV2.users || []).find(entry =>
-    normalizeName(entry.user) === normalizeName(name)
+    wanted.includes(normalizeName(entry.user))
   );
+
   return item ? Number(item.amount) || 0 : 0;
 }
 
 function renderUserSpendingDonutV2(){
-  const christos = userSpendingAmountV2("Χρήστος");
-  const gianna = userSpendingAmountV2("Γιάννα");
+  const christos = userSpendingAmountV2(["Χρήστος","Chris","Christos"]);
+  const gianna = userSpendingAmountV2(["Γιάννα","Gianna"]);
   const total = christos + gianna;
 
   const christosPercent = total > 0 ? christos / total : 0;
@@ -936,7 +939,23 @@ function bindUi(){
   $("historyMonthFilterV2").addEventListener("change", loadHistoryV2);
   $("historyUserFilterV2").addEventListener("change", loadHistoryV2);
   $("refreshHistoryBtnV2").addEventListener("click", loadHistoryV2);
-  $("refreshDashboardBtnV2").addEventListener("click", async()=>{await loadData();renderDashboardV2();await loadUserSpendingV2();});
+  $("refreshDashboardBtnV2").addEventListener("click", async () => {
+    const button = $("refreshDashboardBtnV2");
+    button.disabled = true;
+    button.textContent = "Refreshing...";
+
+    try{
+      await loadData();
+      renderDashboardV2();
+      await loadUserSpendingV2();
+      showMessage("Dashboard refreshed.", "success", 1400);
+    }catch(error){
+      showMessage(error.message, "error", 3500);
+    }finally{
+      button.disabled = false;
+      button.textContent = "Refresh";
+    }
+  });
   ["incomeEmsaV2","incomeThemaV2","incomeGiochiV2","incomeOtherV2"].forEach(id => {
     $(id).addEventListener("input", updateIncomeEditorTotalV2);
   });
