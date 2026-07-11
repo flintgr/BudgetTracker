@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Phase 8 Editable Income</title>
+<title>Family Budget — Phase 8.1 User Spending Donut</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -128,6 +128,41 @@
         </div>
         <div class="dashboard-progress-track-v2"><div id="dashboardProgressFillV2" class="dashboard-progress-fill-v2"></div></div>
       </section>
+      <section class="user-spending-donut-v2" aria-label="Spending by user">
+        <div class="donut-wrap-v2">
+          <svg class="donut-svg-v2" viewBox="0 0 220 220" role="img" aria-label="User spending proportions">
+            <circle class="donut-track-v2" cx="110" cy="110" r="76"></circle>
+            <circle id="donutChristosV2" class="donut-segment-v2 christos" cx="110" cy="110" r="76"></circle>
+            <circle id="donutGiannaV2" class="donut-segment-v2 gianna" cx="110" cy="110" r="76"></circle>
+          </svg>
+
+          <div class="donut-center-v2">
+            <div class="donut-user-v2">
+              <span class="person-icon-v2 man" aria-hidden="true">
+                <i class="person-head-v2"></i><i class="person-body-v2"></i>
+              </span>
+              <strong id="donutChristosPercentV2">0%</strong>
+              <small>Χρήστος</small>
+            </div>
+
+            <div class="donut-divider-v2"></div>
+
+            <div class="donut-user-v2">
+              <span class="person-icon-v2 woman" aria-hidden="true">
+                <i class="person-head-v2"></i><i class="person-body-v2"></i>
+              </span>
+              <strong id="donutGiannaPercentV2">0%</strong>
+              <small>Γιάννα</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="donut-amounts-v2">
+          <span><i class="dot-v2 christos"></i><strong id="donutChristosAmountV2">€0</strong></span>
+          <span><i class="dot-v2 gianna"></i><strong id="donutGiannaAmountV2">€0</strong></span>
+        </div>
+      </section>
+
       <section class="income-editor-v2">
         <div class="dashboard-section-title-v2">
           <h2>Income Sources</h2>

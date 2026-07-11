@@ -549,6 +549,68 @@ async function submitExpense(){
 
 
 
+
+let userSpendingV2 = {
+  users: [],
+  total: 0
+};
+
+function userSpendingAmountV2(name){
+  const item = (userSpendingV2.users || []).find(entry =>
+    normalizeName(entry.user) === normalizeName(name)
+  );
+  return item ? Number(item.amount) || 0 : 0;
+}
+
+function renderUserSpendingDonutV2(){
+  const christos = userSpendingAmountV2("Χρήστος");
+  const gianna = userSpendingAmountV2("Γιάννα");
+  const total = christos + gianna;
+
+  const christosPercent = total > 0 ? christos / total : 0;
+  const giannaPercent = total > 0 ? gianna / total : 0;
+  const circumference = 2 * Math.PI * 76;
+
+  const christosLength = circumference * christosPercent;
+  const giannaLength = circumference * giannaPercent;
+
+  const christosCircle = $("donutChristosV2");
+  const giannaCircle = $("donutGiannaV2");
+
+  christosCircle.style.strokeDasharray =
+    christosLength + " " + Math.max(circumference - christosLength, 0);
+  christosCircle.style.strokeDashoffset = "0";
+
+  giannaCircle.style.strokeDasharray =
+    giannaLength + " " + Math.max(circumference - giannaLength, 0);
+  giannaCircle.style.strokeDashoffset = String(-christosLength);
+
+  $("donutChristosPercentV2").textContent = Math.round(christosPercent * 100) + "%";
+  $("donutGiannaPercentV2").textContent = Math.round(giannaPercent * 100) + "%";
+  $("donutChristosAmountV2").textContent = moneyWhole(christos);
+  $("donutGiannaAmountV2").textContent = moneyWhole(gianna);
+}
+
+async function loadUserSpendingV2(){
+  try{
+    const response = await api({
+      action:"getUserSpending",
+      month:activeMonth
+    });
+
+    userSpendingV2 = {
+      users:Array.isArray(response.users) ? response.users : [],
+      total:Number(response.total) || 0
+    };
+
+    renderUserSpendingDonutV2();
+  }catch(error){
+    userSpendingV2 = { users:[], total:0 };
+    renderUserSpendingDonutV2();
+    console.error("User spending chart:", error);
+  }
+}
+
 function getIncomeSourcesMapV2(){
   const sources = Array.isArray(appData?.dashboard?.incomeSources)
     ? appData.dashboard.incomeSources
@@ -665,6 +727,7 @@ function renderDashboardV2(){
 async function openDashboardV2(){
   setActiveMainViewV2("dashboard");
   renderDashboardV2();
+  await loadUserSpendingV2();
 }
 
 function addSelectOption(select, value, label){
@@ -873,7 +936,7 @@ function bindUi(){
   $("historyMonthFilterV2").addEventListener("change", loadHistoryV2);
   $("historyUserFilterV2").addEventListener("change", loadHistoryV2);
   $("refreshHistoryBtnV2").addEventListener("click", loadHistoryV2);
-  $("refreshDashboardBtnV2").addEventListener("click", async()=>{await loadData();renderDashboardV2();});
+  $("refreshDashboardBtnV2").addEventListener("click", async()=>{await loadData();renderDashboardV2();await loadUserSpendingV2();});
   ["incomeEmsaV2","incomeThemaV2","incomeGiochiV2","incomeOtherV2"].forEach(id => {
     $(id).addEventListener("input", updateIncomeEditorTotalV2);
   });
@@ -959,6 +1022,10 @@ async function loadData(){
   renderQuickCategorySettings();
   renderHistoryFiltersV2();
   renderDashboardV2();
+
+  if(!$("dashboardViewV2").classList.contains("hidden")){
+    await loadUserSpendingV2();
+  }
 }
 
 async function load(){
