@@ -437,6 +437,85 @@ function renderQuickCategories(){
 }
 
 
+
+function renderEditBudgetV2(){
+  const container = $("editBudgetListV2");
+  if(!container || !appData) return;
+
+  const categories = Array.isArray(appData.categories) ? appData.categories : [];
+  container.innerHTML = "";
+
+  categories.forEach(item => {
+    const row = document.createElement("label");
+    row.className = "edit-budget-row-v2";
+
+    row.innerHTML = `
+      <span class="edit-budget-icon-v2">${categoryIcon(item.category)}</span>
+      <span class="edit-budget-main-v2">
+        <strong>${escapeHtml(displayName(item.category))}</strong>
+        <small>${escapeHtml(item.category)}</small>
+      </span>
+      <input
+        type="number"
+        inputmode="decimal"
+        min="0"
+        step="0.01"
+        value="${Number(item.budget) || 0}"
+        data-category="${escapeHtml(item.category)}"
+        aria-label="Budget for ${escapeHtml(item.category)}"
+      >
+    `;
+
+    container.appendChild(row);
+  });
+}
+
+function readBudgetItemsV2(){
+  return [...document.querySelectorAll("#editBudgetListV2 input[data-category]")].map(input => ({
+    category: input.dataset.category,
+    budget: Math.max(Number(input.value) || 0, 0)
+  }));
+}
+
+async function saveBudgetsV2(){
+  const button = $("saveBudgetsBtnV2");
+  const items = readBudgetItemsV2();
+
+  if(!items.length) return;
+
+  button.disabled = true;
+  button.textContent = "Saving...";
+
+  try{
+    const result = await api({
+      action:"saveBudgets",
+      month:activeMonth,
+      items:JSON.stringify(items)
+    });
+
+    if(Array.isArray(result.categories)){
+      appData.categories = result.categories;
+    }
+
+    if(result.dashboard){
+      appData.dashboard = result.dashboard;
+    }
+
+    renderCategorySelect();
+    renderQuickCategories();
+    renderCategoryStatus();
+    renderDashboardV2();
+    renderEditBudgetV2();
+
+    showMessage("Budgets updated.", "success", 1800);
+  }catch(error){
+    showMessage(error.message, "error", 3500);
+  }finally{
+    button.disabled = false;
+    button.textContent = "Save Budgets";
+  }
+}
+
 function renderMonthManagementV2(){
   const select = $("monthManagementSelectV2");
   if(!select || !appData) return;
@@ -1067,6 +1146,7 @@ function openStableView(view){
 function openSettings(){
   setActiveMainViewV2("settings");
   renderQuickCategorySettings();
+  renderEditBudgetV2();
   renderMonthManagementV2();
 }
 
@@ -1107,6 +1187,7 @@ function bindUi(){
     $(id).addEventListener("input", updateIncomeEditorTotalV2);
   });
   $("saveIncomeSourcesBtnV2").addEventListener("click", saveIncomeSourcesV2);
+  $("saveBudgetsBtnV2").addEventListener("click", saveBudgetsV2);
   $("createNextMonthBtnV2").addEventListener("click", createNextMonthV2);
   $("clearMonthBtnV2").addEventListener("click", clearMonthDataV2);
   $("deleteMonthBtnV2").addEventListener("click", deleteMonthV2);
@@ -1189,6 +1270,7 @@ async function loadData(){
   renderQuickCategories();
   renderCategoryStatus();
   renderQuickCategorySettings();
+  renderEditBudgetV2();
   renderMonthManagementV2();
   renderHistoryFiltersV2();
   renderDashboardV2();
