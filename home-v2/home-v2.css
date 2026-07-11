@@ -1512,3 +1512,40 @@ nav button.active span{
   color:#C65D00;
   background:#FFF7ED;
 }
+
+
+/* Phase 10.2 — Flat Calm Finance icons */
+.cf-icon-v2.flat{
+  fill:currentColor;
+  stroke:none;
+}
+
+.card .icon svg{
+  fill:currentColor;
+  stroke:none;
+}
+
+.chip>span,
+.settings-icon,
+.history-icon-v2,
+.dashboard-category-icon-v2,
+.edit-budget-icon-v2{
+  border-radius:14px;
+}
+
+.chip>span .cf-icon-v2.flat{
+  width:24px;
+  height:24px;
+}
+
+.settings-icon .cf-icon-v2.flat,
+.dashboard-category-icon-v2 .cf-icon-v2.flat,
+.edit-budget-icon-v2 .cf-icon-v2.flat{
+  width:22px;
+  height:22px;
+}
+
+.history-icon-v2 .cf-icon-v2.flat{
+  width:23px;
+  height:23px;
+}

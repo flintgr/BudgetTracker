@@ -101,26 +101,26 @@ function displayName(name){
 }
 
 function iconSvgV2(type){
-  const paths = {
-    cart: '<circle cx="9" cy="20" r="1.25"/><circle cx="18" cy="20" r="1.25"/><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.4L21 7H7"/>',
-    delivery: '<path d="M4 10h16"/><path d="M6 10a6 6 0 0 1 12 0"/><path d="M8 6.5 6.5 4"/><path d="m16 6.5 1.5-2.5"/><path d="M5 14h14l-1.2 5H6.2L5 14Z"/>',
-    work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/><path d="M10 12v2h4v-2"/>',
-    shirt: '<path d="m8 4 4 2 4-2 4 4-3 2v10H7V10L4 8l4-4Z"/>',
-    car: '<path d="m5 11 1.5-4h11L19 11"/><rect x="3" y="11" width="18" height="7" rx="2"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/>',
-    beauty: '<path d="M9 3h6v5H9z"/><path d="M8 8h8v13H8z"/><path d="M10 3V1h4v2"/>',
-    phone: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M10 5h4"/><circle cx="12" cy="18.5" r=".75"/>',
-    art: '<path d="M12 3a9 9 0 1 0 0 18h1.5a2.5 2.5 0 0 0 0-5H12a2 2 0 0 1 0-4h2a7 7 0 0 0-2-9Z"/><circle cx="7.5" cy="10" r="1"/><circle cx="9" cy="6.5" r="1"/><circle cx="14" cy="6.5" r="1"/>',
-    light: '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M8 14a6 6 0 1 1 8 0c-1.1.8-1.5 1.6-1.5 3h-5c0-1.4-.4-2.2-1.5-3Z"/>',
-    water: '<path d="M12 3s6 6.2 6 11a6 6 0 0 1-12 0c0-4.8 6-11 6-11Z"/>',
-    home: '<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
-    gift: '<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13"/><path d="M3 12h18"/><path d="M12 8H8.5A2.5 2.5 0 1 1 11 5.5L12 8Z"/><path d="M12 8h3.5A2.5 2.5 0 1 0 13 5.5L12 8Z"/>',
-    school: '<path d="m3 10 9-5 9 5-9 5-9-5Z"/><path d="M7 13v4c3 2 7 2 10 0v-4"/><path d="M21 10v6"/>',
-    insurance: '<path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
-    document: '<path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5"/><path d="M9 12h6"/><path d="M9 16h6"/>'
+  const shapes = {
+    cart: '<path d="M4 5h2l1.6 8.2A2 2 0 0 0 9.6 15h7.8a2 2 0 0 0 1.9-1.4L21 8H8l-.5-3H4Z"/><circle cx="10" cy="19" r="1.6"/><circle cx="18" cy="19" r="1.6"/>',
+    delivery: '<path d="M5 10a7 7 0 0 1 14 0H5Z"/><path d="M4 13h16l-1.2 6H5.2L4 13Z"/>',
+    work: '<rect x="3" y="7" width="18" height="13" rx="2"/><rect x="8" y="3" width="8" height="5" rx="2"/><rect x="10" y="11" width="4" height="3" rx="1"/>',
+    shirt: '<path d="m8 4 4 2 4-2 5 4-4 3v9H7v-9L3 8l5-4Z"/>',
+    car: '<path d="m5 10 2-5h10l2 5h1a2 2 0 0 1 2 2v5H2v-5a2 2 0 0 1 2-2h1Z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+    beauty: '<rect x="8" y="7" width="8" height="14" rx="2"/><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="10" y="1" width="4" height="3" rx="1"/>',
+    phone: '<rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18.5" r="1"/>',
+    art: '<path d="M12 3a9 9 0 1 0 0 18h2a3 3 0 0 0 0-6h-1.5a2.5 2.5 0 0 1 0-5H15a5 5 0 0 0-3-7Z"/><circle cx="7.5" cy="10" r="1.2"/><circle cx="9" cy="6.5" r="1.2"/><circle cx="14" cy="6.5" r="1.2"/>',
+    light: '<path d="M12 2a7 7 0 0 0-4.2 12.6c1 .8 1.4 1.6 1.4 2.9h5.6c0-1.3.4-2.1 1.4-2.9A7 7 0 0 0 12 2Z"/><rect x="9" y="18" width="6" height="2" rx="1"/><rect x="10" y="21" width="4" height="1.5" rx=".75"/>',
+    water: '<path d="M12 2s7 7.2 7 12a7 7 0 0 1-14 0c0-4.8 7-12 7-12Z"/>',
+    home: '<path d="m2 11 10-9 10 9-2 2-2-1.8V21H6v-9.8L4 13l-2-2Z"/><rect x="10" y="14" width="4" height="7"/>',
+    gift: '<rect x="3" y="9" width="18" height="12" rx="2"/><rect x="2" y="7" width="20" height="5" rx="2"/><rect x="10" y="7" width="4" height="14"/><path d="M12 7C8 7 6 5.5 6 3.8 6 2.8 6.8 2 7.8 2 10 2 12 7 12 7Z"/><path d="M12 7c4 0 6-1.5 6-3.2 0-1-.8-1.8-1.8-1.8C14 2 12 7 12 7Z"/>',
+    school: '<path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 12v5c4 3 8 3 12 0v-5l-6 3-6-3Z"/><rect x="20" y="9" width="2" height="8" rx="1"/>',
+    insurance: '<path d="M12 2 3 6v6c0 5.5 3.8 9 9 10 5.2-1 9-4.5 9-10V6l-9-4Z"/><path d="m8 12 3 3 5-6-2-1-3 4-1-1-2 1Z" fill="#fff"/>',
+    document: '<path d="M6 2h8l4 4v16H6V2Z"/><path d="M14 2v5h5" fill="#fff" opacity=".35"/><rect x="9" y="11" width="6" height="2" rx="1" fill="#fff"/><rect x="9" y="15" width="6" height="2" rx="1" fill="#fff"/>'
   };
 
-  return '<svg class="cf-icon-v2" viewBox="0 0 24 24" aria-hidden="true">' +
-    (paths[type] || paths.document) +
+  return '<svg class="cf-icon-v2 flat" viewBox="0 0 24 24" aria-hidden="true">' +
+    (shapes[type] || shapes.document) +
     '</svg>';
 }
 
@@ -1029,7 +1029,7 @@ function getHistoryFiltersV2(){
   const userValue = $("historyUserFilterV2").value;
 
   return {
-    month: monthValue === "current" ? activeMonth : monthValue,
+    month: monthValue,
     user: userValue === "current" ? activeUser : userValue
   };
 }
@@ -1116,11 +1116,18 @@ async function loadHistoryV2(){
   try{
     const response = await api({
       action:"getTransactions",
-      month:filters.month || "",
+      month:filters.month === "current" ? "" : (filters.month || ""),
       user:filters.user || ""
     });
 
-    const items = Array.isArray(response.transactions) ? response.transactions : [];
+    let items = Array.isArray(response.transactions) ? response.transactions : [];
+
+    if(filters.month === "current"){
+      items = items.filter(item =>
+        normalizeName(item.month) === normalizeName(activeMonth)
+      );
+    }
+
     updateHistorySummaryV2(items);
     renderHistoryItemsV2(items);
     status.textContent = items.length + " ledger rows";
