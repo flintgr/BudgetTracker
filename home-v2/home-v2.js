@@ -21,6 +21,14 @@ function money(value){
   });
 }
 
+
+function moneyWhole(value){
+  const n = Number(value) || 0;
+  return "€" + Math.round(n).toLocaleString("en-US", {
+    maximumFractionDigits: 0
+  });
+}
+
 function api(params){
   return new Promise((resolve, reject) => {
     const callback = "fbv2_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
@@ -244,9 +252,9 @@ function renderSummary(data){
     ? Math.max(Math.round((available / income) * 100), 0)
     : 0;
 
-  $("incomeValue").textContent = money(income);
-  $("expensesValue").textContent = money(expenses);
-  $("availableValue").textContent = money(available);
+  $("incomeValue").textContent = moneyWhole(income);
+  $("expensesValue").textContent = moneyWhole(expenses);
+  $("availableValue").textContent = moneyWhole(available);
   $("expensesMeta").textContent = expensesPct + "% of income";
   $("availableMeta").textContent = availablePct + "% remaining";
   $("monthPill").textContent = activeMonth || data.selectedMonth || data.latestMonth || "Month";
@@ -387,7 +395,11 @@ function renderQuickCategories(){
     saveQuickCategoryNames();
   }
 
-  if(!quickCategoryNames.some(name => normalizeName(name) === normalizeName(selectedCategory))){
+  const selectedExistsInAllCategories = availableNames.some(name =>
+    normalizeName(name) === normalizeName(selectedCategory)
+  );
+
+  if(!selectedExistsInAllCategories){
     selectedCategory = quickCategoryNames[0] || availableNames[0] || "";
   }
 
@@ -540,9 +552,9 @@ function renderDashboardV2(){
   const d = appData?.dashboard || {};
   const income = Number(d.totalIncome)||0, expenses = Number(d.totalSpent)||0, available = Number(d.remainingAfterSpent)||0;
   const percent = income>0 ? Math.min((expenses/income)*100,100) : 0;
-  $("dashboardIncomeV2").textContent = money(income);
-  $("dashboardExpensesV2").textContent = money(expenses);
-  $("dashboardAvailableV2").textContent = money(available);
+  $("dashboardIncomeV2").textContent = moneyWhole(income);
+  $("dashboardExpensesV2").textContent = moneyWhole(expenses);
+  $("dashboardAvailableV2").textContent = moneyWhole(available);
   $("dashboardSpentPercentV2").textContent = Math.round(percent)+"%";
   const fill = $("dashboardProgressFillV2");
   fill.style.width = percent+"%";
