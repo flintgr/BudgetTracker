@@ -363,10 +363,11 @@ function renderCategorySelect(){
     select.appendChild(option);
   });
 
-  if(!names.some(name => normalizeName(name) === normalizeName(selectedCategory))){
-    selectedCategory = names[0] || "";
-  }
+  const matched = names.find(name =>
+    normalizeName(name) === normalizeName(selectedCategory)
+  );
 
+  selectedCategory = matched || names[0] || "";
   select.value = selectedCategory;
 }
 
@@ -819,6 +820,7 @@ function bindUi(){
     selectedCategory = event.target.value;
     localStorage.setItem(LAST_CATEGORY_KEY, selectedCategory);
     renderQuickCategories();
+    renderCategorySelect();
     renderCategoryStatus();
   });
 
