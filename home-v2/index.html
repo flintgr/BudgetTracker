@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Phase 8.2 User Spending Fix</title>
+<title>Family Budget — Phase 9 Month Management</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -195,6 +195,30 @@
       </div>
       <p>Select up to 8 categories. Changes are saved on this device.</p>
       <div id="quickCategorySettings" class="settings-list"></div>
+
+      <section class="month-management-v2">
+        <div class="month-management-head-v2">
+          <div>
+            <span>Month Management</span>
+            <strong>Clear or delete a month</strong>
+          </div>
+        </div>
+
+        <select id="monthManagementSelectV2"></select>
+
+        <button id="clearMonthBtnV2" class="month-action-v2 clear" type="button">
+          Clear Month Data
+        </button>
+
+        <button id="deleteMonthBtnV2" class="month-action-v2 delete" type="button">
+          Delete Month
+        </button>
+
+        <p>
+          Clear resets monthly expenses and removes that month's history.
+          Delete removes the entire monthly sheet and its history.
+        </p>
+      </section>
     </section>
 
     <nav>

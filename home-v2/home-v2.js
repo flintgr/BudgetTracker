@@ -436,6 +436,97 @@ function renderQuickCategories(){
   container.appendChild(more);
 }
 
+
+function renderMonthManagementV2(){
+  const select = $("monthManagementSelectV2");
+  if(!select || !appData) return;
+
+  const previous = select.value || activeMonth;
+  const months = Array.isArray(appData.availableMonths) ? appData.availableMonths : [];
+
+  select.innerHTML = "";
+
+  months.forEach(month => {
+    const option = document.createElement("option");
+    option.value = month;
+    option.textContent = month;
+    select.appendChild(option);
+  });
+
+  select.value = months.includes(previous) ? previous : (activeMonth || months[0] || "");
+}
+
+async function clearMonthDataV2(){
+  const month = $("monthManagementSelectV2").value;
+  if(!month) return;
+
+  const approved = window.confirm(
+    "Clear all expenses and history for " + month + "?\\n\\nBudgets and income sources will stay unchanged."
+  );
+
+  if(!approved) return;
+
+  const button = $("clearMonthBtnV2");
+  button.disabled = true;
+  button.textContent = "Clearing...";
+
+  try{
+    await api({
+      action:"clearMonthData",
+      month
+    });
+
+    activeMonth = month;
+    localStorage.setItem(MONTH_STORAGE_KEY, activeMonth);
+
+    await loadData();
+    await loadUserSpendingV2();
+
+    showMessage(month + " was cleared.", "success", 2200);
+  }catch(error){
+    showMessage(error.message, "error", 3500);
+  }finally{
+    button.disabled = false;
+    button.textContent = "Clear Month Data";
+  }
+}
+
+async function deleteMonthV2(){
+  const month = $("monthManagementSelectV2").value;
+  if(!month) return;
+
+  const typed = window.prompt(
+    "Type DELETE to permanently delete " + month + " and all its history."
+  );
+
+  if(typed !== "DELETE") return;
+
+  const button = $("deleteMonthBtnV2");
+  button.disabled = true;
+  button.textContent = "Deleting...";
+
+  try{
+    const result = await api({
+      action:"deleteMonth",
+      month
+    });
+
+    activeMonth = result.selectedMonth || "";
+    localStorage.setItem(MONTH_STORAGE_KEY, activeMonth);
+
+    await loadData();
+    await loadUserSpendingV2();
+
+    showMessage(month + " was deleted.", "success", 2200);
+    setActiveMainViewV2("home");
+  }catch(error){
+    showMessage(error.message, "error", 3500);
+  }finally{
+    button.disabled = false;
+    button.textContent = "Delete Month";
+  }
+}
+
 function renderQuickCategorySettings(){
   const container = $("quickCategorySettings");
   if(!container || !appData) return;
@@ -920,6 +1011,7 @@ function openStableView(view){
 function openSettings(){
   setActiveMainViewV2("settings");
   renderQuickCategorySettings();
+  renderMonthManagementV2();
 }
 
 function closeSettings(){
@@ -960,6 +1052,8 @@ function bindUi(){
     $(id).addEventListener("input", updateIncomeEditorTotalV2);
   });
   $("saveIncomeSourcesBtnV2").addEventListener("click", saveIncomeSourcesV2);
+  $("clearMonthBtnV2").addEventListener("click", clearMonthDataV2);
+  $("deleteMonthBtnV2").addEventListener("click", deleteMonthV2);
 
   $("userPillV2").addEventListener("click", event => {
     event.stopPropagation();
@@ -1039,6 +1133,7 @@ async function loadData(){
   renderQuickCategories();
   renderCategoryStatus();
   renderQuickCategorySettings();
+  renderMonthManagementV2();
   renderHistoryFiltersV2();
   renderDashboardV2();
 
