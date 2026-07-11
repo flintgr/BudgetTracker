@@ -534,6 +534,57 @@ async function submitExpense(){
 }
 
 
+
+function renderDashboardV2(){
+  const d = appData?.dashboard || {};
+  const income = Number(d.totalIncome)||0, expenses = Number(d.totalSpent)||0, available = Number(d.remainingAfterSpent)||0;
+  const percent = income>0 ? Math.min((expenses/income)*100,100) : 0;
+  $("dashboardIncomeV2").textContent = money(income);
+  $("dashboardExpensesV2").textContent = money(expenses);
+  $("dashboardAvailableV2").textContent = money(available);
+  $("dashboardSpentPercentV2").textContent = Math.round(percent)+"%";
+  const fill = $("dashboardProgressFillV2");
+  fill.style.width = percent+"%";
+  fill.className = "dashboard-progress-fill-v2" + (percent>=90?" danger":percent>=70?" warning":"");
+
+  const categories = Array.isArray(appData?.categories) ? appData.categories : [];
+  $("dashboardCategoryCountV2").textContent = String(categories.length);
+  const list = $("dashboardCategoryListV2");
+  list.innerHTML = "";
+  if(!categories.length){
+    list.innerHTML = '<div class="dashboard-empty-v2">No category data for this month.</div>';
+    return;
+  }
+
+  categories.slice().sort((a,b)=>(Number(b.totalSpent)||0)-(Number(a.totalSpent)||0)).forEach(item=>{
+    const budget=Number(item.budget)||0, spent=Number(item.totalSpent)||0;
+    const rawBalance=Number(item.balance), balance=Number.isFinite(rawBalance)?rawBalance:budget-spent;
+    const p=budget>0?Math.min((spent/budget)*100,100):0;
+    const row=document.createElement("article");
+    row.className="dashboard-category-row-v2";
+    row.innerHTML=`
+      <div class="dashboard-category-head-v2">
+        <div class="dashboard-category-icon-v2">${categoryIcon(item.category)}</div>
+        <div class="dashboard-category-main-v2">
+          <strong>${escapeHtml(displayName(item.category))}</strong>
+          <span>${money(spent)} of ${money(budget)}</span>
+        </div>
+        <div class="dashboard-category-balance-v2">
+          <strong>${money(balance)}</strong><span>Balance</span>
+        </div>
+      </div>
+      <div class="dashboard-category-progress-v2">
+        <div class="${p>=90?"danger":p>=70?"warning":""}" style="width:${p}%"></div>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+async function openDashboardV2(){
+  setActiveMainViewV2("dashboard");
+  renderDashboardV2();
+}
+
 function addSelectOption(select, value, label){
   const option = document.createElement("option");
   option.value = value;
@@ -690,15 +741,17 @@ async function deleteHistoryTransactionV2(transaction){
 function setActiveMainViewV2(viewName){
   $("homeView").classList.toggle("hidden", viewName !== "home");
   $("historyViewV2").classList.toggle("hidden", viewName !== "history");
+  $("dashboardViewV2").classList.toggle("hidden", viewName !== "dashboard");
   $("settingsView").classList.toggle("hidden", viewName !== "settings");
 
   $("homeNavBtn").classList.toggle("active", viewName === "home");
   $("historyNavBtn").classList.toggle("active", viewName === "history");
+  $("dashboardNavBtn").classList.toggle("active", viewName === "dashboard");
   $("settingsNavBtn").classList.toggle("active", viewName === "settings");
-  $("dashboardNavBtn").classList.remove("active");
 
   $("pageTitleV2").textContent =
     viewName === "history" ? "History" :
+    viewName === "dashboard" ? "Dashboard" :
     viewName === "settings" ? "Quick Categories" :
     "Home";
 }
@@ -733,11 +786,12 @@ function bindUi(){
   $("closeSettingsBtn").addEventListener("click", closeSettings);
 
   $("historyNavBtn").addEventListener("click", openHistoryV2);
-  $("dashboardNavBtn").addEventListener("click", () => openStableView("dashboard"));
+  $("dashboardNavBtn").addEventListener("click", openDashboardV2);
 
   $("historyMonthFilterV2").addEventListener("change", loadHistoryV2);
   $("historyUserFilterV2").addEventListener("change", loadHistoryV2);
   $("refreshHistoryBtnV2").addEventListener("click", loadHistoryV2);
+  $("refreshDashboardBtnV2").addEventListener("click", async()=>{await loadData();renderDashboardV2();});
 
   $("userPillV2").addEventListener("click", event => {
     event.stopPropagation();
@@ -817,6 +871,7 @@ async function loadData(){
   renderCategoryStatus();
   renderQuickCategorySettings();
   renderHistoryFiltersV2();
+  renderDashboardV2();
 }
 
 async function load(){

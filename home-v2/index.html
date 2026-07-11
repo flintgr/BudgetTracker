@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Phase 6 History V2</title>
+<title>Family Budget — Phase 7 Dashboard V2</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -112,6 +112,26 @@
 
       <div id="historyStatusV2" class="history-status-v2">History is ready.</div>
       <div id="historyListV2" class="history-list-v2"></div>
+    </section>
+
+
+    <section id="dashboardViewV2" class="dashboard-view-v2 hidden">
+      <section class="dashboard-summary-v2">
+        <article class="dashboard-card-v2 income"><span>Income</span><strong id="dashboardIncomeV2">€0.00</strong></article>
+        <article class="dashboard-card-v2 expenses"><span>Expenses</span><strong id="dashboardExpensesV2">€0.00</strong></article>
+        <article class="dashboard-card-v2 available"><span>Available</span><strong id="dashboardAvailableV2">€0.00</strong></article>
+      </section>
+      <section class="dashboard-overview-v2">
+        <div class="dashboard-overview-head-v2">
+          <div><span>Monthly progress</span><strong id="dashboardSpentPercentV2">0%</strong></div>
+          <button id="refreshDashboardBtnV2" type="button">Refresh</button>
+        </div>
+        <div class="dashboard-progress-track-v2"><div id="dashboardProgressFillV2" class="dashboard-progress-fill-v2"></div></div>
+      </section>
+      <section class="dashboard-categories-v2">
+        <div class="dashboard-section-title-v2"><h2>Categories</h2><span id="dashboardCategoryCountV2">0</span></div>
+        <div id="dashboardCategoryListV2" class="dashboard-category-list-v2"></div>
+      </section>
     </section>
 
 <section id="settingsView" class="settings-view hidden">
