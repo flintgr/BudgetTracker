@@ -1428,3 +1428,87 @@ nav button.active span{
 .settings-category input{
   accent-color:#0A84FF;
 }
+
+
+/* Phase 10.1 — Calm Finance SVG Icons */
+.cf-icon-v2{
+  width:1.35em;
+  height:1.35em;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.card .icon svg{
+  width:22px;
+  height:22px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.card.income .icon{
+  color:#16803B;
+  background:#ECFDF3;
+}
+
+.card.expenses .icon{
+  color:#C65D00;
+  background:#FFF7ED;
+}
+
+.card.available .icon{
+  color:#0066CC;
+  background:#EFF6FF;
+}
+
+.chip>span,
+.settings-icon,
+.history-icon-v2,
+.dashboard-category-icon-v2,
+.edit-budget-icon-v2{
+  color:#0A84FF;
+}
+
+.chip.active>span{
+  color:#0066CC;
+}
+
+.chip>span .cf-icon-v2{
+  width:25px;
+  height:25px;
+  margin:auto;
+}
+
+.settings-icon .cf-icon-v2,
+.dashboard-category-icon-v2 .cf-icon-v2,
+.edit-budget-icon-v2 .cf-icon-v2{
+  width:23px;
+  height:23px;
+  margin:auto;
+}
+
+.history-icon-v2 .cf-icon-v2{
+  width:24px;
+  height:24px;
+  margin:auto;
+}
+
+.settings-icon,
+.history-icon-v2,
+.dashboard-category-icon-v2,
+.edit-budget-icon-v2{
+  background:#EFF6FF;
+}
+
+.history-item-v2:nth-child(even) .history-icon-v2,
+.dashboard-category-row-v2:nth-child(even) .dashboard-category-icon-v2,
+.edit-budget-row-v2:nth-child(even) .edit-budget-icon-v2{
+  color:#C65D00;
+  background:#FFF7ED;
+}

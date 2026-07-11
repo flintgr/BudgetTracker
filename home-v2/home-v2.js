@@ -100,21 +100,49 @@ function displayName(name){
   return original.length > 10 ? original.slice(0, 9) + "…" : original;
 }
 
+function iconSvgV2(type){
+  const paths = {
+    cart: '<circle cx="9" cy="20" r="1.25"/><circle cx="18" cy="20" r="1.25"/><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.4L21 7H7"/>',
+    delivery: '<path d="M4 10h16"/><path d="M6 10a6 6 0 0 1 12 0"/><path d="M8 6.5 6.5 4"/><path d="m16 6.5 1.5-2.5"/><path d="M5 14h14l-1.2 5H6.2L5 14Z"/>',
+    work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/><path d="M10 12v2h4v-2"/>',
+    shirt: '<path d="m8 4 4 2 4-2 4 4-3 2v10H7V10L4 8l4-4Z"/>',
+    car: '<path d="m5 11 1.5-4h11L19 11"/><rect x="3" y="11" width="18" height="7" rx="2"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/>',
+    beauty: '<path d="M9 3h6v5H9z"/><path d="M8 8h8v13H8z"/><path d="M10 3V1h4v2"/>',
+    phone: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M10 5h4"/><circle cx="12" cy="18.5" r=".75"/>',
+    art: '<path d="M12 3a9 9 0 1 0 0 18h1.5a2.5 2.5 0 0 0 0-5H12a2 2 0 0 1 0-4h2a7 7 0 0 0-2-9Z"/><circle cx="7.5" cy="10" r="1"/><circle cx="9" cy="6.5" r="1"/><circle cx="14" cy="6.5" r="1"/>',
+    light: '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M8 14a6 6 0 1 1 8 0c-1.1.8-1.5 1.6-1.5 3h-5c0-1.4-.4-2.2-1.5-3Z"/>',
+    water: '<path d="M12 3s6 6.2 6 11a6 6 0 0 1-12 0c0-4.8 6-11 6-11Z"/>',
+    home: '<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+    gift: '<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13"/><path d="M3 12h18"/><path d="M12 8H8.5A2.5 2.5 0 1 1 11 5.5L12 8Z"/><path d="M12 8h3.5A2.5 2.5 0 1 0 13 5.5L12 8Z"/>',
+    school: '<path d="m3 10 9-5 9 5-9 5-9-5Z"/><path d="M7 13v4c3 2 7 2 10 0v-4"/><path d="M21 10v6"/>',
+    insurance: '<path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
+    document: '<path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5"/><path d="M9 12h6"/><path d="M9 16h6"/>'
+  };
+
+  return '<svg class="cf-icon-v2" viewBox="0 0 24 24" aria-hidden="true">' +
+    (paths[type] || paths.document) +
+    '</svg>';
+}
+
 function categoryIcon(name){
   const normalized = normalizeName(name);
 
-  if(normalized === "SM" || normalized.includes("SUPER MARKET")) return "🛒";
-  if(normalized.includes("DELIVERY")) return "🍔";
-  if(normalized.includes("WORK")) return "💼";
-  if(normalized.includes("ΡΟΥΧ") || normalized.includes("CLOTH")) return "👕";
-  if(normalized.includes("CAR") || normalized.includes("ΒΕΝΖ")) return "🚗";
-  if(normalized.includes("HAIR") || normalized.includes("NAIL")) return "💅";
-  if(normalized.includes("COSMOTE") || normalized.includes("VODAFONE")) return "📱";
-  if(normalized.includes("ADOBE")) return "🎨";
-  if(normalized.includes("ΔΕΗ") || normalized.includes("ELECTRIC")) return "💡";
-  if(normalized.includes("ΕΥΔΑΠ") || normalized.includes("WATER")) return "💧";
+  if(normalized === "SM" || normalized.includes("SUPER MARKET")) return iconSvgV2("cart");
+  if(normalized.includes("DELIVERY")) return iconSvgV2("delivery");
+  if(normalized.includes("WORK")) return iconSvgV2("work");
+  if(normalized.includes("ΡΟΥΧ") || normalized.includes("CLOTH")) return iconSvgV2("shirt");
+  if(normalized.includes("CAR") || normalized.includes("ΒΕΝΖ")) return iconSvgV2("car");
+  if(normalized.includes("HAIR") || normalized.includes("NAIL")) return iconSvgV2("beauty");
+  if(normalized.includes("COSMOTE") || normalized.includes("VODAFONE")) return iconSvgV2("phone");
+  if(normalized.includes("ADOBE")) return iconSvgV2("art");
+  if(normalized.includes("ΔΕΗ") || normalized.includes("ELECTRIC")) return iconSvgV2("light");
+  if(normalized.includes("ΕΥΔΑΠ") || normalized.includes("WATER")) return iconSvgV2("water");
+  if(normalized.includes("ΔΑΝΕΙΟ") || normalized.includes("RENT") || normalized.includes("HOUSE")) return iconSvgV2("home");
+  if(normalized.includes("ΔΩΡ") || normalized.includes("GIFT")) return iconSvgV2("gift");
+  if(normalized.includes("DELACROIX") || normalized.includes("SCHOOL") || normalized.includes("ΣΧΟΛ")) return iconSvgV2("school");
+  if(normalized.includes("ALLIANZ") || normalized.includes("INS")) return iconSvgV2("insurance");
 
-  return "🧾";
+  return iconSvgV2("document");
 }
 
 function escapeHtml(value){
