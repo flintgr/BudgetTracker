@@ -1004,17 +1004,25 @@ function getHistoryFiltersV2(){
 
 function formatHistoryDateV2(value){
   if(!value) return "";
+
   const date = new Date(value);
   if(Number.isNaN(date.getTime())) return String(value);
 
-  return date.toLocaleDateString("el-GR", {
+  const datePart = new Intl.DateTimeFormat("el-GR", {
+    timeZone:"Europe/Athens",
     day:"2-digit",
     month:"short",
     year:"numeric"
-  }) + " · " + date.toLocaleTimeString("el-GR", {
+  }).format(date);
+
+  const timePart = new Intl.DateTimeFormat("el-GR", {
+    timeZone:"Europe/Athens",
     hour:"2-digit",
-    minute:"2-digit"
-  });
+    minute:"2-digit",
+    hour12:false
+  }).format(date);
+
+  return datePart + " · " + timePart;
 }
 
 function updateHistorySummaryV2(items){
