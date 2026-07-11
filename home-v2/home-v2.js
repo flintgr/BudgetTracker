@@ -548,7 +548,76 @@ async function submitExpense(){
 
 
 
+
+function getIncomeSourcesMapV2(){
+  const sources = Array.isArray(appData?.dashboard?.incomeSources)
+    ? appData.dashboard.incomeSources
+    : [];
+
+  const map = {};
+  sources.forEach(item => {
+    map[normalizeName(item.name)] = Number(item.amount) || 0;
+  });
+
+  return map;
+}
+
+function readIncomeInputsV2(){
+  return {
+    emsa: Math.max(Number($("incomeEmsaV2").value) || 0, 0),
+    thema: Math.max(Number($("incomeThemaV2").value) || 0, 0),
+    giochi: Math.max(Number($("incomeGiochiV2").value) || 0, 0),
+    other: Math.max(Number($("incomeOtherV2").value) || 0, 0)
+  };
+}
+
+function updateIncomeEditorTotalV2(){
+  const values = readIncomeInputsV2();
+  const total = values.emsa + values.thema + values.giochi + values.other;
+  $("incomeEditorTotalV2").textContent = moneyWhole(total);
+}
+
+function renderIncomeEditorV2(){
+  const map = getIncomeSourcesMapV2();
+
+  $("incomeEmsaV2").value = map["EMSA"] || 0;
+  $("incomeThemaV2").value = map[normalizeName("ΘΕΜΑ")] || 0;
+  $("incomeGiochiV2").value = map["GIOCHI"] || 0;
+  $("incomeOtherV2").value = map["OTHER"] || 0;
+
+  updateIncomeEditorTotalV2();
+}
+
+async function saveIncomeSourcesV2(){
+  const button = $("saveIncomeSourcesBtnV2");
+  const values = readIncomeInputsV2();
+
+  button.disabled = true;
+  button.textContent = "Saving...";
+
+  try{
+    await api({
+      action:"saveIncomeSources",
+      month:activeMonth,
+      emsa:values.emsa,
+      thema:values.thema,
+      giochi:values.giochi,
+      other:values.other
+    });
+
+    await loadData();
+    renderDashboardV2();
+    showMessage("Income updated.", "success");
+  }catch(error){
+    showMessage(error.message, "error", 3500);
+  }finally{
+    button.disabled = false;
+    button.textContent = "Save Income";
+  }
+}
+
 function renderDashboardV2(){
+  renderIncomeEditorV2();
   const d = appData?.dashboard || {};
   const income = Number(d.totalIncome)||0, expenses = Number(d.totalSpent)||0, available = Number(d.remainingAfterSpent)||0;
   const percent = income>0 ? Math.min((expenses/income)*100,100) : 0;
@@ -805,6 +874,10 @@ function bindUi(){
   $("historyUserFilterV2").addEventListener("change", loadHistoryV2);
   $("refreshHistoryBtnV2").addEventListener("click", loadHistoryV2);
   $("refreshDashboardBtnV2").addEventListener("click", async()=>{await loadData();renderDashboardV2();});
+  ["incomeEmsaV2","incomeThemaV2","incomeGiochiV2","incomeOtherV2"].forEach(id => {
+    $(id).addEventListener("input", updateIncomeEditorTotalV2);
+  });
+  $("saveIncomeSourcesBtnV2").addEventListener("click", saveIncomeSourcesV2);
 
   $("userPillV2").addEventListener("click", event => {
     event.stopPropagation();
