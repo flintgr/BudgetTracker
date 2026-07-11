@@ -1041,3 +1041,84 @@ nav button{min-height:50px;border:0;border-radius:16px;background:transparent;co
 .month-action-v2.create:active{
   transform:scale(.985);
 }
+
+
+/* Phase 9.2 — Settings Cleanup */
+.settings-view{
+  padding-top:16px;
+}
+
+.settings-simple-head-v2{
+  margin-bottom:14px;
+}
+
+.settings-simple-head-v2 h2{
+  margin:0;
+  color:var(--text);
+  font-size:30px;
+  font-weight:950;
+  letter-spacing:-.8px;
+}
+
+.settings-menu-v2{
+  margin-bottom:12px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 10px 28px rgba(16,24,40,.05);
+}
+
+.settings-menu-v2 summary{
+  list-style:none;
+  cursor:pointer;
+  padding:17px 16px;
+  color:var(--text);
+  font-size:16px;
+  font-weight:950;
+}
+
+.settings-menu-v2 summary::-webkit-details-marker{
+  display:none;
+}
+
+.settings-menu-v2 summary::after{
+  content:"⌄";
+  float:right;
+  color:var(--muted);
+  transition:transform .18s ease;
+}
+
+.settings-menu-v2[open] summary::after{
+  transform:rotate(180deg);
+}
+
+.settings-menu-content-v2{
+  padding:0 14px 14px;
+  border-top:1px solid #f0f2f5;
+}
+
+.settings-menu-content-v2>p{
+  margin:12px 2px 14px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:750;
+  line-height:1.45;
+}
+
+.settings-menu-content-v2 .settings-list{
+  margin-top:12px;
+}
+
+.settings-menu-content-v2 #monthManagementSelectV2{
+  width:100%;
+  min-height:48px;
+  margin-top:14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+  color:var(--text);
+  padding:0 13px;
+  font-size:14px;
+  font-weight:850;
+}

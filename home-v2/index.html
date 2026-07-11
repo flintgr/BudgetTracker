@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Phase 9.1 Create Next Month</title>
+<title>Family Budget — Phase 9.2 Settings Cleanup</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -186,44 +186,42 @@
     </section>
 
 <section id="settingsView" class="settings-view hidden">
-      <div class="settings-head">
-        <div>
-          <span>Home V2</span>
-          <h2>Quick Categories</h2>
-        </div>
-        <button id="closeSettingsBtn" type="button">Done</button>
+      <div class="settings-simple-head-v2">
+        <h2>Settings</h2>
       </div>
-      <p>Select up to 8 categories. Changes are saved on this device.</p>
-      <div id="quickCategorySettings" class="settings-list"></div>
 
-      <section class="month-management-v2">
-        <div class="month-management-head-v2">
-          <div>
-            <span>Month Management</span>
-            <strong>Clear or delete a month</strong>
-          </div>
+      <details class="settings-menu-v2">
+        <summary>Quick Categories</summary>
+        <div class="settings-menu-content-v2">
+          <p>Select up to 8 categories. Changes are saved on this device.</p>
+          <div id="quickCategorySettings" class="settings-list"></div>
         </div>
+      </details>
 
-        <select id="monthManagementSelectV2"></select>
+      <details class="settings-menu-v2">
+        <summary>Month Management</summary>
+        <div class="settings-menu-content-v2">
+          <select id="monthManagementSelectV2"></select>
 
-        <button id="createNextMonthBtnV2" class="month-action-v2 create" type="button">
-          Create Next Month
-        </button>
+          <button id="createNextMonthBtnV2" class="month-action-v2 create" type="button">
+            Create Next Month
+          </button>
 
-        <button id="clearMonthBtnV2" class="month-action-v2 clear" type="button">
-          Clear Month Data
-        </button>
+          <button id="clearMonthBtnV2" class="month-action-v2 clear" type="button">
+            Clear Month Data
+          </button>
 
-        <button id="deleteMonthBtnV2" class="month-action-v2 delete" type="button">
-          Delete Month
-        </button>
+          <button id="deleteMonthBtnV2" class="month-action-v2 delete" type="button">
+            Delete Month
+          </button>
 
-        <p>
-          Create makes the next month from the latest monthly sheet.
-          Clear resets monthly expenses and removes that month's history.
-          Delete removes the entire monthly sheet and its history.
-        </p>
-      </section>
+          <p>
+            Create makes the next month from the latest monthly sheet.
+            Clear resets monthly expenses and removes that month's history.
+            Delete removes the entire monthly sheet and its history.
+          </p>
+        </div>
+      </details>
     </section>
 
     <nav>

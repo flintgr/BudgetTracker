@@ -1047,7 +1047,7 @@ function setActiveMainViewV2(viewName){
   $("pageTitleV2").textContent =
     viewName === "history" ? "History" :
     viewName === "dashboard" ? "Dashboard" :
-    viewName === "settings" ? "Quick Categories" :
+    viewName === "settings" ? "Settings" :
     "Home";
 }
 
@@ -1079,7 +1079,6 @@ function bindUi(){
   $("editQuickBtn").addEventListener("click", openSettings);
   $("settingsNavBtn").addEventListener("click", openSettings);
   $("homeNavBtn").addEventListener("click", closeSettings);
-  $("closeSettingsBtn").addEventListener("click", closeSettings);
 
   $("historyNavBtn").addEventListener("click", openHistoryV2);
   $("dashboardNavBtn").addEventListener("click", openDashboardV2);
