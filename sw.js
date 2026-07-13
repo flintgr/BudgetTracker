@@ -1,4 +1,4 @@
-const CACHE_NAME = "family-budget-phase10-2";
+const CACHE_NAME = "family-budget-phase11-1-icons";
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(["./","./index.html","./style.css","./config.js","./app.js","./manifest.json"])));
