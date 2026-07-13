@@ -811,18 +811,22 @@ async function submitExpense(){
   button.innerHTML = "<span>…</span>Saving";
 
   try{
+    const note = $("expenseNoteV2").value.trim();
+
     const result = await api({
       action: "addExpense",
       user: activeUser,
       month: activeMonth,
       category,
-      amount
+      amount,
+      note
     });
 
     selectedCategory = category;
     localStorage.setItem(LAST_CATEGORY_KEY, selectedCategory);
 
     $("amountInputV2").value = "";
+    $("expenseNoteV2").value = "";
     showMessage("Added " + money(result.amount) + " to " + result.category, "success");
 
     button.innerHTML = "<span>✓</span>Added";
@@ -1127,6 +1131,7 @@ function renderHistoryItemsV2(items){
           ${escapeHtml(transaction.user)} · ${escapeHtml(transaction.month)}<br>
           ${escapeHtml(formatHistoryDateV2(transaction.date))}
         </span>
+        ${transaction.note ? `<span class="history-note-v2">${escapeHtml(transaction.note)}</span>` : ""}
         <span class="history-action-v2 ${escapeHtml(actionClass)}">${escapeHtml(action)}</span>
       </div>
 
@@ -1326,6 +1331,13 @@ function bindUi(){
   });
 
   amountInput.addEventListener("keydown", event => {
+    if(event.key === "Enter"){
+      event.preventDefault();
+      if(!$("addExpenseBtnV2").disabled) submitExpense();
+    }
+  });
+
+  $("expenseNoteV2").addEventListener("keydown", event => {
     if(event.key === "Enter"){
       event.preventDefault();
       if(!$("addExpenseBtnV2").disabled) submitExpense();
