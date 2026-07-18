@@ -1391,3 +1391,142 @@ async function load(){
 }
 
 load();
+
+
+/* =========================================================
+   Phase 14 — Category Management
+   ========================================================= */
+const CATEGORY_ICON_LIBRARY_V14 = [
+  ["cart","SM / Supermarket"],["delivery","Delivery"],["work","Work"],
+  ["shirt","Clothes"],["car","Car"],["beauty","Hair / Beauty"],
+  ["phone","Phone"],["art","Adobe / Creative"],["light","Electricity"],
+  ["water","Water"],["home","Home / Loan"],["gift","Gifts"],
+  ["school","School"],["insurance","Insurance"],["document","Document / Other"]
+];
+
+function categoryLibraryV14(){
+  return Array.isArray(appData?.categoryLibrary) ? appData.categoryLibrary : [];
+}
+function categoryMetaV14(name){
+  const n=normalizeName(name);
+  return categoryLibraryV14().find(x=>normalizeName(x.name)===n) || null;
+}
+function categoryIdV14(name){ return categoryMetaV14(name)?.id || normalizeName(name); }
+function categoryNameFromIdV14(id){
+  return categoryLibraryV14().find(x=>String(x.id)===String(id))?.name || "";
+}
+
+const categoryIconLegacyV14 = categoryIcon;
+categoryIcon = function(name){
+  const meta=categoryMetaV14(name);
+  return meta?.icon ? iconSvgV2(meta.icon) : categoryIconLegacyV14(name);
+};
+
+function loadQuickCategoryNames(categoryNames){
+  try{
+    const ids=JSON.parse(localStorage.getItem(QUICK_IDS_STORAGE_KEY)||"[]");
+    if(Array.isArray(ids) && ids.length){
+      const names=ids.map(categoryNameFromIdV14).filter(Boolean);
+      if(names.length) return names.slice(0,MAX_QUICK_CATEGORIES);
+    }
+    const old=JSON.parse(localStorage.getItem(QUICK_STORAGE_KEY)||"[]");
+    if(Array.isArray(old)){
+      const byNormalized=new Map(categoryNames.map(n=>[normalizeName(n),n]));
+      const valid=old.map(n=>byNormalized.get(normalizeName(n))).filter(Boolean);
+      if(valid.length) return [...new Set(valid)].slice(0,MAX_QUICK_CATEGORIES);
+    }
+  }catch(e){ console.warn(e); }
+  return getDefaultQuickCategories(categoryNames);
+}
+function saveQuickCategoryNames(){
+  localStorage.setItem(QUICK_STORAGE_KEY,JSON.stringify(quickCategoryNames));
+  localStorage.setItem(QUICK_IDS_STORAGE_KEY,JSON.stringify(quickCategoryNames.map(categoryIdV14)));
+}
+
+function populateCategoryIconSelectV14(select, selected){
+  select.innerHTML="";
+  CATEGORY_ICON_LIBRARY_V14.forEach(([id,label])=>{
+    const o=document.createElement("option"); o.value=id; o.textContent=label; o.selected=id===selected; select.appendChild(o);
+  });
+}
+
+function renderManageCategoriesV14(){
+  const list=$("manageCategoryListV2");
+  if(!list) return;
+  const library=categoryLibraryV14().slice().sort((a,b)=>(Number(a.order)||0)-(Number(b.order)||0));
+  list.innerHTML="";
+  library.forEach((item,index)=>{
+    const row=document.createElement("div"); row.className="manage-category-row-v2"; row.dataset.id=item.id;
+    row.innerHTML=`
+      <span class="manage-category-swatch-v2" style="--cat-color:${escapeHtml(item.color||"#6f8f7a")}">${iconSvgV2(item.icon||"document")}</span>
+      <span class="manage-category-main-v2"><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.icon||"document")}</small></span>
+      <span class="manage-category-actions-v2">
+        <button type="button" data-action="up" title="Move up" ${index===0?"disabled":""}>↑</button>
+        <button type="button" data-action="down" title="Move down" ${index===library.length-1?"disabled":""}>↓</button>
+        <button type="button" data-action="edit" title="Edit">✎</button>
+        <button type="button" data-action="delete" class="danger" title="Delete">×</button>
+      </span>`;
+    row.addEventListener("click",async e=>{
+      const action=e.target.closest("button")?.dataset.action; if(!action) return;
+      if(action==="edit") return openCategoryEditorV14(row,item);
+      if(action==="delete") return deleteCategoryV14(item);
+      if(action==="up"||action==="down") return moveCategoryV14(item.id,action);
+    });
+    list.appendChild(row);
+  });
+}
+
+function openCategoryEditorV14(row,item){
+  if(row.querySelector('.category-edit-grid-v2')) return;
+  const editor=document.createElement('div'); editor.className='category-edit-grid-v2';
+  editor.innerHTML=`<input class="wide" data-field="name" maxlength="40" value="${escapeHtml(item.name)}"><select data-field="icon"></select><input data-field="color" type="color" value="${escapeHtml(item.color||'#6f8f7a')}"><button class="cancel" type="button">Cancel</button><button class="save" type="button">Save</button>`;
+  populateCategoryIconSelectV14(editor.querySelector('select'),item.icon||'document');
+  editor.querySelector('.cancel').onclick=()=>editor.remove();
+  editor.querySelector('.save').onclick=async()=>{
+    const name=editor.querySelector('[data-field=name]').value.trim();
+    if(!name) return showMessage('Category name is required.','error');
+    try{
+      await api({action:'updateCategory',id:item.id,name,icon:editor.querySelector('[data-field=icon]').value,color:editor.querySelector('[data-field=color]').value});
+      if(selectedCategory===item.name){selectedCategory=name;localStorage.setItem(LAST_CATEGORY_KEY,name)}
+      await loadData(); showMessage('Category updated.','success',1600);
+    }catch(err){showMessage(err.message,'error',3500)}
+  };
+  row.appendChild(editor);
+}
+
+async function addCategoryV14(){
+  const name=$("categoryNameInputV2").value.trim();
+  const budget=Math.max(Number($("categoryBudgetInputV2").value)||0,0);
+  if(!name) return showMessage('Enter a category name.','error');
+  const btn=$("addCategoryBtnV2"); btn.disabled=true; btn.textContent='Adding...';
+  try{
+    const result=await api({action:'createCategory',month:activeMonth,name,budget,icon:$("categoryIconSelectV2").value,color:$("categoryColorInputV2").value});
+    $("categoryNameInputV2").value=''; $("categoryBudgetInputV2").value='';
+    selectedCategory=result.category?.name||name; localStorage.setItem(LAST_CATEGORY_KEY,selectedCategory);
+    await loadData(); showMessage('Category created.','success',1800);
+  }catch(err){showMessage(err.message,'error',3500)}finally{btn.disabled=false;btn.textContent='Add Category'}
+}
+async function deleteCategoryV14(item){
+  const typed=prompt(`Delete “${item.name}”?\n\nOld History entries will remain. Type DELETE to confirm.`,'');
+  if(typed!== 'DELETE') return;
+  try{
+    await api({action:'deleteCategory',id:item.id});
+    quickCategoryNames=quickCategoryNames.filter(n=>categoryIdV14(n)!==item.id); saveQuickCategoryNames();
+    if(normalizeName(selectedCategory)===normalizeName(item.name)) selectedCategory='';
+    await loadData(); showMessage('Category removed.','success',1800);
+  }catch(err){showMessage(err.message,'error',3500)}
+}
+async function moveCategoryV14(id,direction){
+  try{await api({action:'reorderCategory',id,direction});await loadData()}catch(err){showMessage(err.message,'error',3500)}
+}
+
+const openSettingsBeforeV14=openSettings;
+openSettings=function(){openSettingsBeforeV14();renderManageCategoriesV14();populateCategoryIconSelectV14($("categoryIconSelectV2"),"document")};
+
+const loadDataBeforeV14=loadData;
+loadData=async function(){await loadDataBeforeV14();renderManageCategoriesV14();const s=$("categoryIconSelectV2");if(s&&!s.options.length)populateCategoryIconSelectV14(s,"document")};
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const add=$("addCategoryBtnV2"); if(add) add.addEventListener('click',addCategoryV14);
+  const sel=$("categoryIconSelectV2"); if(sel) populateCategoryIconSelectV14(sel,'document');
+});

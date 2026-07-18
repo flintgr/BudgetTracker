@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Phase 11.3 24px Custom SVG Icons</title>
+<title>Family Budget — Phase 14 Category Management</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -204,6 +204,28 @@
         <div class="settings-menu-content-v2">
           <p>Select up to 8 categories. Changes are saved on this device.</p>
           <div id="quickCategorySettings" class="settings-list"></div>
+        </div>
+      </details>
+
+
+      <details class="settings-menu-v2" id="manageCategoriesMenuV2">
+        <summary>Manage Categories</summary>
+        <div class="settings-menu-content-v2">
+          <p>Create, rename, reorder or remove expense categories. Icons use stable library IDs.</p>
+
+          <div class="category-editor-card-v2">
+            <input id="categoryNameInputV2" type="text" maxlength="40" placeholder="Category name">
+            <input id="categoryBudgetInputV2" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Initial budget">
+            <label class="category-editor-label-v2">Icon
+              <select id="categoryIconSelectV2"></select>
+            </label>
+            <label class="category-editor-label-v2">Color
+              <input id="categoryColorInputV2" type="color" value="#6f8f7a">
+            </label>
+            <button id="addCategoryBtnV2" class="save-budgets-btn-v2" type="button">Add Category</button>
+          </div>
+
+          <div id="manageCategoryListV2" class="manage-category-list-v2"></div>
         </div>
       </details>
 
