@@ -1692,14 +1692,10 @@ nav button.active span{
 .manage-category-actions-v2 button[data-action="merge"]{font-size:15px}
 
 
-/* v1.0.1 — Developer diagnostics */
-.developer-diagnostics-v2{display:grid;gap:14px}
-.diagnostic-grid-v2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.diagnostic-grid-v2>div{background:#f7f8f7;border:1px solid rgba(25,50,38,.09);border-radius:14px;padding:12px;display:grid;gap:5px}
-.diagnostic-grid-v2 span{font-size:12px;color:#6f7772}
-.diagnostic-grid-v2 strong{font-size:14px;overflow-wrap:anywhere}
-.diagnostic-actions-v2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.diagnostic-actions-v2 button{min-height:44px;border:0;border-radius:13px;background:#e8eeea;color:#244535;font-weight:700}
-.diagnostic-actions-v2 button:last-child{background:#f6eaea;color:#934444}
-.diagnostic-status-v2{margin:0!important;font-size:12px!important}
-@media(max-width:430px){.diagnostic-grid-v2,.diagnostic-actions-v2{grid-template-columns:1fr}}
+/* BudgetTracker v1.1.0 — Offline / sync status */
+.sync-status-v2{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:8px;min-height:34px;padding:6px 14px;background:#eef5ef;color:#284b34;border-bottom:1px solid rgba(0,0,0,.06);font-size:12px}
+.sync-status-v2.offline{background:#fff4df;color:#75521a}.sync-status-v2.syncing{background:#eaf1ff;color:#294f85}.sync-status-v2.error{background:#fff0ef;color:#8b332c}
+.sync-dot-v2{width:8px;height:8px;border-radius:50%;background:#4d9b65;flex:0 0 auto}.offline .sync-dot-v2{background:#d79a32}.syncing .sync-dot-v2{background:#4e79b8;animation:syncPulseV2 1s infinite}.error .sync-dot-v2{background:#c8574d}
+.sync-status-v2 small{opacity:.75}.sync-status-v2 button{margin-left:auto;border:0;border-radius:999px;padding:5px 10px;background:rgba(255,255,255,.75);font:inherit;font-weight:700;color:inherit}.sync-status-v2 button.hidden{display:none}
+.history-action-v2.pending{background:#fff1cc;color:#77551a}.history-item-v2.pending-sync{outline:1px dashed rgba(215,154,50,.55)}
+@keyframes syncPulseV2{50%{opacity:.35}}

@@ -1,7 +1,7 @@
 {
   "name": "Family Budget",
   "short_name": "Family Budget",
-  "start_url": "./index.html",
+  "start_url": "./home-v2/index.html",
   "display": "standalone",
   "background_color": "#101114",
   "theme_color": "#101114",
@@ -17,5 +17,7 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "scope": "./",
+  "description": "Family Budget with offline expense capture and automatic synchronization."
 }

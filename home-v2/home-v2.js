@@ -6,15 +6,6 @@ const USER_STORAGE_KEY = "budgetTrackerUser";
 const MONTH_STORAGE_KEY = "budgetTrackerMonth";
 const LAST_CATEGORY_KEY = "budgetTrackerLastCategory";
 const MAX_QUICK_CATEGORIES = 8;
-const APP_VERSION = "1.0.1";
-const APP_LOAD_STARTED_AT = performance.now();
-
-const diagnosticsV2 = {
-  initialLoadMs: null,
-  lastApiAction: "—",
-  lastApiMs: null,
-  lastApiResult: "—"
-};
 
 let appData = null;
 let activeUser = localStorage.getItem(USER_STORAGE_KEY) || window.FB_CONFIG.DEFAULT_USER || "";
@@ -39,13 +30,94 @@ function moneyWhole(value){
   });
 }
 
-function api(params){
-  const apiStartedAt = performance.now();
-  const apiAction = String(params?.action || "unknown");
-  diagnosticsV2.lastApiAction = apiAction;
-  diagnosticsV2.lastApiResult = "Running";
-  updateDiagnosticsV2();
 
+const APP_VERSION = "v1.1.0-offline-beta";
+const APP_DATA_CACHE_KEY = "appData:last";
+const HISTORY_CACHE_PREFIX = "history:";
+let syncInProgressV2 = false;
+
+function makeClientTransactionIdV2(){
+  const random = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2)+Date.now().toString(36);
+  return "txn_" + String(activeUser||"user").replace(/\s+/g,"_") + "_" + random;
+}
+
+async function pendingQueueV2(){
+  try{return await window.BudgetOfflineStore.listQueue()}catch(_){return []}
+}
+
+async function updateSyncStatusV2(mode,message){
+  const bar=$("syncStatusV2"), pendingEl=$("syncPendingV2"), button=$("syncNowBtnV2");
+  if(!bar) return;
+  const queue=await pendingQueueV2();
+  const pending=queue.length;
+  const effective=mode || (navigator.onLine ? "online" : "offline");
+  bar.className="sync-status-v2 "+effective;
+  const label=bar.querySelector("strong");
+  if(label) label.textContent=message || (effective==="offline"?"Offline":effective==="syncing"?"Syncing…":effective==="error"?"Sync problem":"Online");
+  if(pendingEl) pendingEl.textContent=pending ? pending+" pending" : "";
+  if(button) button.classList.toggle("hidden", !pending || !navigator.onLine || effective==="syncing");
+}
+
+function applyOptimisticExpenseV2(data,expense){
+  const copy=(typeof structuredClone === "function") ? structuredClone(data) : JSON.parse(JSON.stringify(data));
+  const item=(copy.categories||[]).find(c=>normalizeName(c.category)===normalizeName(expense.category));
+  if(item){
+    item.totalSpent=(Number(item.totalSpent)||0)+Number(expense.amount||0);
+    item.balance=(Number(item.budget)||0)-item.totalSpent;
+  }
+  if(copy.dashboard){
+    copy.dashboard.expenses=(Number(copy.dashboard.expenses)||0)+Number(expense.amount||0);
+    copy.dashboard.available=(Number(copy.dashboard.income)||0)-copy.dashboard.expenses;
+  }
+  return copy;
+}
+
+async function cacheAppDataV2(data){
+  try{await window.BudgetOfflineStore.setCache(APP_DATA_CACHE_KEY,data)}catch(error){console.warn("App cache failed",error)}
+}
+
+async function cachedAppDataV2(){
+  try{return (await window.BudgetOfflineStore.getCache(APP_DATA_CACHE_KEY))?.value || null}catch(_){return null}
+}
+
+async function syncPendingExpensesV2(){
+  if(syncInProgressV2 || !navigator.onLine) return;
+  const queue=await pendingQueueV2();
+  if(!queue.length){await updateSyncStatusV2("online");return;}
+  syncInProgressV2=true;
+  await updateSyncStatusV2("syncing");
+  let failed=false;
+  for(const item of queue){
+    try{
+      await api({...item.payload, clientTransactionId:item.clientTransactionId});
+      await window.BudgetOfflineStore.removeQueue(item.clientTransactionId);
+    }catch(error){
+      failed=true;
+      await window.BudgetOfflineStore.markFailed(item.clientTransactionId,error.message);
+      if(!navigator.onLine) break;
+    }
+  }
+  syncInProgressV2=false;
+  if(navigator.onLine && !failed){
+    try{await loadData({preferNetwork:true});}catch(_){ }
+  }
+  await updateSyncStatusV2(failed?"error":(navigator.onLine?"online":"offline"));
+}
+
+async function queueExpenseOfflineV2(payload,existingClientTransactionId){
+  const clientTransactionId=existingClientTransactionId || makeClientTransactionIdV2();
+  await window.BudgetOfflineStore.enqueue({clientTransactionId,payload,createdAt:new Date().toISOString()});
+  if(appData){
+    appData=applyOptimisticExpenseV2(appData,payload);
+    await cacheAppDataV2(appData);
+    renderSummary(appData); renderCategoryStatus(); renderDashboardV2(); renderEditBudgetV2();
+  }
+  await updateSyncStatusV2("offline","Saved offline");
+  return {success:true,offline:true,clientTransactionId,amount:payload.amount,category:payload.category};
+}
+
+function api(params){
+  if(!navigator.onLine) return Promise.reject(new Error("OFFLINE"));
   return new Promise((resolve, reject) => {
     const callback = "fbv2_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
     const url = new URL(window.FB_CONFIG.API_URL);
@@ -74,9 +146,6 @@ function api(params){
       // "fbv2_... is not defined" in the browser console.
       window[callback] = function(){};
       script.remove();
-      diagnosticsV2.lastApiMs = Math.round(performance.now() - apiStartedAt);
-      diagnosticsV2.lastApiResult = "Timeout";
-      updateDiagnosticsV2();
       reject(new Error("API timeout after 120 seconds"));
 
       setTimeout(() => {
@@ -98,9 +167,6 @@ function api(params){
         reject(new Error(data?.error || "API error"));
         return;
       }
-      diagnosticsV2.lastApiMs = Math.round(performance.now() - apiStartedAt);
-      diagnosticsV2.lastApiResult = "Success";
-      updateDiagnosticsV2();
       resolve(data);
     };
 
@@ -116,38 +182,6 @@ function api(params){
   });
 }
 
-
-function formatDurationV2(ms){
-  if(ms === null || ms === undefined || !Number.isFinite(Number(ms))) return "—";
-  const value = Number(ms);
-  return value < 1000 ? Math.round(value) + " ms" : (value / 1000).toFixed(2) + " s";
-}
-
-function updateDiagnosticsV2(){
-  const setText = (id, value) => { const el=$(id); if(el) el.textContent=value; };
-  setText("diagAppVersionV2", "v" + APP_VERSION);
-  setText("diagOnlineV2", navigator.onLine ? "Online" : "Offline");
-  setText("diagLoadTimeV2", formatDurationV2(diagnosticsV2.initialLoadMs));
-  setText("diagApiActionV2", diagnosticsV2.lastApiAction || "—");
-  setText("diagApiTimeV2", formatDurationV2(diagnosticsV2.lastApiMs));
-  setText("diagApiResultV2", diagnosticsV2.lastApiResult || "—");
-  setText("diagMonthV2", activeMonth || "—");
-  setText("diagUserV2", activeUser || "—");
-}
-
-async function clearAppCacheV2(){
-  const status=$("diagStatusV2");
-  try{
-    if("caches" in window){
-      const keys=await caches.keys();
-      await Promise.all(keys.map(key=>caches.delete(key)));
-    }
-    if(status) status.textContent="App cache cleared. Reload the page to fetch fresh files.";
-  }catch(error){
-    if(status) status.textContent="Cache clear failed: " + error.message;
-  }
-  updateDiagnosticsV2();
-}
 
 function normalizeMonthKeyV2(value){
   const raw = String(value || "")
@@ -863,24 +897,35 @@ async function submitExpense(){
   try{
     const note = $("expenseNoteV2").value.trim();
 
-    const result = await api({
+    const payload = {
       action: "addExpense",
       user: activeUser,
       month: activeMonth,
       category,
+      categoryId: categoryIdV14(category),
       amount,
       note
-    });
+    };
+
+    let result;
+    const clientTransactionId=makeClientTransactionIdV2();
+    try{
+      result=await api({...payload,clientTransactionId});
+    }catch(networkError){
+      const offlineLike=!navigator.onLine || networkError.message==="OFFLINE" || /failed|timeout|network/i.test(networkError.message);
+      if(!offlineLike) throw networkError;
+      result=await queueExpenseOfflineV2(payload,clientTransactionId);
+    }
 
     selectedCategory = category;
     localStorage.setItem(LAST_CATEGORY_KEY, selectedCategory);
 
     $("amountInputV2").value = "";
     $("expenseNoteV2").value = "";
-    showMessage("Added " + money(result.amount) + " to " + result.category, "success");
+    showMessage((result.offline ? "Saved offline: " : "Added ") + money(result.amount) + " to " + result.category, result.offline ? "info" : "success");
 
     button.innerHTML = "<span>✓</span>Added";
-    await loadData();
+    if(!result.offline) await loadData({preferNetwork:true});
 
     setTimeout(() => {
       button.innerHTML = "<span>＋</span>Add Expense";
@@ -1184,7 +1229,7 @@ function renderHistoryItemsV2(items){
     const actionClass = action.toLowerCase().replace(/\s+/g, "-");
 
     const row = document.createElement("article");
-    row.className = "history-item-v2";
+    row.className = "history-item-v2" + (transaction.pending ? " pending-sync" : "");
     row.innerHTML = `
       <div class="history-icon-v2">${categoryIcon(transaction.category)}</div>
 
@@ -1229,6 +1274,7 @@ async function loadHistoryV2(){
     });
 
     let items = Array.isArray(response.transactions) ? response.transactions : [];
+    try{await window.BudgetOfflineStore.setCache(HISTORY_CACHE_PREFIX+activeMonth,items)}catch(_){}
 
     if(filters.month === "current"){
       const activeMonthKey = normalizeMonthKeyV2(activeMonth);
@@ -1242,9 +1288,12 @@ async function loadHistoryV2(){
     renderHistoryItemsV2(items);
     status.textContent = items.length + " ledger rows";
   }catch(error){
-    updateHistorySummaryV2([]);
-    list.innerHTML = '<div class="history-empty-v2">History could not load.</div>';
-    status.textContent = "Error: " + error.message;
+    const cached=(await window.BudgetOfflineStore.getCache(HISTORY_CACHE_PREFIX+activeMonth).catch(()=>null))?.value || [];
+    const pending=(await pendingQueueV2()).map(item=>({id:item.clientTransactionId,date:item.createdAt,user:item.payload.user,categoryId:item.payload.categoryId,category:item.payload.category,amount:item.payload.amount,month:item.payload.month,action:"Pending",relatedId:item.clientTransactionId,note:item.payload.note||"",canDelete:false,pending:true}));
+    let items=[...pending,...cached];
+    if(filters.user) items=items.filter(item=>item.user===filters.user);
+    updateHistorySummaryV2(items); renderHistoryItemsV2(items);
+    status.textContent=(navigator.onLine?"Saved history":"Offline history")+" · "+items.length+" rows";
   }
 }
 
@@ -1411,36 +1460,43 @@ function bindUi(){
   updateAddState();
 }
 
-async function loadData(){
-  appData = await api({
-    action: "getAppData",
-    user: activeUser || "",
-    month: activeMonth || ""
-  });
-
+async function renderLoadedDataV2(){
   activeMonth = appData.selectedMonth || activeMonth || appData.latestMonth || "";
   localStorage.setItem(MONTH_STORAGE_KEY, activeMonth);
-
   const categoryNames = getRealCategoryNames(appData);
+  if(!quickCategoryNames.length) quickCategoryNames = loadQuickCategoryNames(categoryNames);
+  renderSummary(appData); renderMonths(); renderUsers(); renderCategorySelect(); renderQuickCategories();
+  renderCategoryStatus(); renderQuickCategorySettings(); renderEditBudgetV2(); renderMonthManagementV2();
+  renderHistoryFiltersV2(); renderDashboardV2();
+  if(!$("dashboardViewV2").classList.contains("hidden") && navigator.onLine) await loadUserSpendingV2();
+}
 
-  if(!quickCategoryNames.length){
-    quickCategoryNames = loadQuickCategoryNames(categoryNames);
+async function loadData(options={}){
+  const cached=await cachedAppDataV2();
+  if(cached && !options.preferNetwork){
+    appData=cached;
+    await renderLoadedDataV2();
   }
-
-  renderSummary(appData);
-  renderMonths();
-  renderUsers();
-  renderCategorySelect();
-  renderQuickCategories();
-  renderCategoryStatus();
-  renderQuickCategorySettings();
-  renderEditBudgetV2();
-  renderMonthManagementV2();
-  renderHistoryFiltersV2();
-  renderDashboardV2();
-
-  if(!$("dashboardViewV2").classList.contains("hidden")){
-    await loadUserSpendingV2();
+  if(!navigator.onLine){
+    if(!appData) throw new Error("No offline data is available yet. Open the app once while online.");
+    await updateSyncStatusV2("offline");
+    return appData;
+  }
+  try{
+    const fresh=await api({action:"getAppData",user:activeUser||"",month:activeMonth||""});
+    appData=fresh;
+    await cacheAppDataV2(appData);
+    await renderLoadedDataV2();
+    await updateSyncStatusV2("online");
+    return appData;
+  }catch(error){
+    if(cached){
+      appData=cached;
+      await renderLoadedDataV2();
+      await updateSyncStatusV2("error","Using saved data");
+      return appData;
+    }
+    throw error;
   }
 }
 
@@ -1449,8 +1505,6 @@ async function load(){
     $("monthPill").textContent = "Loading...";
     bindUi();
     await loadData();
-    diagnosticsV2.initialLoadMs = Math.round(performance.now() - APP_LOAD_STARTED_AT);
-    updateDiagnosticsV2();
   }catch(error){
     $("monthPill").textContent = "Error";
     showMessage(error.message, "error", 0);
@@ -1735,17 +1789,9 @@ const openSettingsBeforeV14=openSettings;
 openSettings=function(){openSettingsBeforeV14();renderManageCategoriesV14();populateCategoryIconSelectV14($("categoryIconSelectV2"),"document")};
 
 const loadDataBeforeV14=loadData;
-loadData=async function(){await loadDataBeforeV14();renderManageCategoriesV14();const s=$("categoryIconSelectV2");if(s&&!s.options.length)populateCategoryIconSelectV14(s,"document")};
+loadData=async function(options={}){await loadDataBeforeV14(options);renderManageCategoriesV14();const s=$("categoryIconSelectV2");if(s&&!s.options.length)populateCategoryIconSelectV14(s,"document")};
 
 document.addEventListener('DOMContentLoaded',()=>{
-  updateDiagnosticsV2();
-  window.addEventListener('online',updateDiagnosticsV2);
-  window.addEventListener('offline',updateDiagnosticsV2);
-  const refreshDiagnostics=$("refreshDiagnosticsBtnV2");
-  if(refreshDiagnostics) refreshDiagnostics.addEventListener('click',updateDiagnosticsV2);
-  const clearCache=$("clearAppCacheBtnV2");
-  if(clearCache) clearCache.addEventListener('click',clearAppCacheV2);
-
   const add=$("addCategoryBtnV2"); if(add) add.addEventListener('click',addCategoryV14);
   const sel=$("categoryIconSelectV2");
   if(sel) populateCategoryIconSelectV14(sel,'document');
@@ -1772,5 +1818,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateCreatePreview();
 });
 
-/* Phase 15 — start the app only after Category Management is fully registered. */
-load();
+/* Phase 16 — connection and automatic synchronization */
+window.addEventListener("online",async()=>{await updateSyncStatusV2("online","Back online");await syncPendingExpensesV2();});
+window.addEventListener("offline",()=>updateSyncStatusV2("offline"));
+document.addEventListener("DOMContentLoaded",()=>{
+  const syncButton=$("syncNowBtnV2");
+  if(syncButton) syncButton.addEventListener("click",syncPendingExpensesV2);
+  updateSyncStatusV2(navigator.onLine?"online":"offline");
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js").catch(console.warn);
+});
+
+/* Phase 16 — start after offline engine and category management are registered. */
+load().then(()=>syncPendingExpensesV2()).catch(console.error);
