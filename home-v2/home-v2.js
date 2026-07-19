@@ -42,10 +42,28 @@ function api(params){
     url.searchParams.set("callback", callback);
 
     const script = document.createElement("script");
+    let settled = false;
+
+    /*
+      Phase 15.1:
+      The first request can be slow because Apps Script may migrate Transactions
+      and calculate category usage. The old 15-second timeout deleted the JSONP
+      callback too early.
+    */
     const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error("API timeout"));
-    }, 15000);
+      if(settled) return;
+      settled = true;
+
+      // Keep a temporary no-op callback so a late JSONP response does not throw
+      // "fbv2_... is not defined" in the browser console.
+      window[callback] = function(){};
+      script.remove();
+      reject(new Error("API timeout after 120 seconds"));
+
+      setTimeout(() => {
+        try{ delete window[callback]; }catch(_){}
+      }, 120000);
+    }, 120000);
 
     function cleanup(){
       clearTimeout(timer);
@@ -54,6 +72,8 @@ function api(params){
     }
 
     window[callback] = (data) => {
+      if(settled) return;
+      settled = true;
       cleanup();
       if(!data || data.success === false){
         reject(new Error(data?.error || "API error"));
@@ -63,6 +83,8 @@ function api(params){
     };
 
     script.onerror = () => {
+      if(settled) return;
+      settled = true;
       cleanup();
       reject(new Error("API request failed"));
     };
