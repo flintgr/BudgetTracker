@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Phase 14.1 Category Management Fix</title>
+<title>Family Budget — Phase 15 Dynamic Categories</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -219,9 +219,17 @@
             <label class="category-editor-label-v2">Icon
               <select id="categoryIconSelectV2"></select>
             </label>
-            <label class="category-editor-label-v2">Color
-              <input id="categoryColorInputV2" type="color" value="#6f8f7a">
+            <label class="category-editor-label-v2">SVG Color
+              <input id="categoryIconColorInputV2" type="color" value="#6f8f7a">
             </label>
+            <label class="category-editor-label-v2">Background Color
+              <input id="categoryBackgroundColorInputV2" type="color" value="#eef3ef">
+            </label>
+            <label class="category-transparent-label-v2">
+              <input id="categoryTransparentBackgroundV2" type="checkbox">
+              <span>Transparent background</span>
+            </label>
+            <div id="categoryStylePreviewV2" class="category-style-preview-v2" aria-label="Icon style preview"></div>
             <button id="addCategoryBtnV2" class="save-budgets-btn-v2" type="button">Add Category</button>
           </div>
 

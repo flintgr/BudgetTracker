@@ -1605,3 +1605,88 @@ nav button.active span{
   background:#eef2f7;
   color:var(--ink);
 }
+
+
+/* Phase 14.2 — separate SVG and background colors */
+.category-icon-style-v142{
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  display:grid;
+  place-items:center;
+  border-radius:inherit;
+  color:var(--category-icon-color);
+  background:var(--category-icon-background);
+  box-sizing:border-box;
+}
+.category-icon-style-v142 svg{
+  color:inherit;
+}
+.manage-category-swatch-v2{
+  padding:0;
+  overflow:hidden;
+  background:transparent;
+  color:inherit;
+}
+.category-style-preview-v2{
+  min-height:62px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--line,#e5e8e4);
+  border-radius:14px;
+  background:#f8faf8;
+}
+.category-style-preview-v2 .category-icon-style-v142{
+  width:44px;
+  height:44px;
+  border-radius:13px;
+}
+.category-style-preview-v2 svg{
+  width:24px;
+  height:24px;
+}
+.category-transparent-label-v2{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:44px;
+  padding:0 10px;
+  border:1px solid #dfe5df;
+  border-radius:12px;
+  background:#f8faf8;
+  color:#69736b;
+  font-size:13px;
+  box-sizing:border-box;
+}
+.category-transparent-label-v2 input{
+  width:18px !important;
+  min-height:18px !important;
+  height:18px !important;
+  padding:0 !important;
+  flex:0 0 auto;
+}
+.category-edit-grid-v2 label{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  font-size:12px;
+  color:#69736b;
+}
+.category-edit-grid-v2 label select,
+.category-edit-grid-v2 label input[type="color"]{
+  width:100%;
+  min-height:42px;
+  box-sizing:border-box;
+}
+.category-edit-grid-v2 label input[type="color"]{
+  padding:5px;
+}
+
+
+/* Phase 15 — category usage, merge and drag reorder */
+.manage-category-row-v2{cursor:grab}
+.manage-category-row-v2:active{cursor:grabbing}
+.manage-category-row-v2.dragging-v15{opacity:.45;transform:scale(.99)}
+.manage-category-main-v2 small{line-height:1.35}
+.manage-category-actions-v2 button[data-action="merge"]{font-size:15px}

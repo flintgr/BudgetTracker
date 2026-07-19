@@ -1018,6 +1018,19 @@ function renderDashboardV2(){
       <div class="dashboard-category-progress-v2">
         <div class="${p>=90?"danger":p>=70?"warning":""}" style="width:${p}%"></div>
       </div>`;
+    row.addEventListener('dragstart',()=>row.classList.add('dragging-v15'));
+    row.addEventListener('dragend',async()=>{
+      row.classList.remove('dragging-v15');
+      const ids=[...list.querySelectorAll('.manage-category-row-v2')].map(el=>el.dataset.id);
+      try{await api({action:'reorderCategories',ids:JSON.stringify(ids)});await loadData()}catch(err){showMessage(err.message,'error',3500)}
+    });
+    row.addEventListener('dragover',e=>{
+      e.preventDefault();
+      const dragging=list.querySelector('.dragging-v15');
+      if(!dragging||dragging===row)return;
+      const rect=row.getBoundingClientRect();
+      list.insertBefore(dragging,e.clientY<rect.top+rect.height/2?row:row.nextSibling);
+    });
     list.appendChild(row);
   });
 }
@@ -1415,9 +1428,37 @@ function categoryNameFromIdV14(id){
 }
 
 const categoryIconLegacyV14 = categoryIcon;
+
+function validHexColorV142(value, fallback){
+  const text=String(value||"").trim();
+  return /^#[0-9a-f]{6}$/i.test(text) ? text : fallback;
+}
+function categoryIconColorV142(meta){
+  return validHexColorV142(meta?.iconColor || meta?.color, "#6f8f7a");
+}
+function categoryBackgroundColorV142(meta){
+  const value=String(meta?.backgroundColor||"").trim();
+  if(value.toLowerCase()==="transparent") return "transparent";
+  return validHexColorV142(value, "#eef3ef");
+}
+function styledIconV142(iconId, iconColor, backgroundColor){
+  const safeIconColor=validHexColorV142(iconColor,"#6f8f7a");
+  const safeBackground=String(backgroundColor||"").toLowerCase()==="transparent"
+    ? "transparent"
+    : validHexColorV142(backgroundColor,"#eef3ef");
+
+  return `<span class="category-icon-style-v142" style="--category-icon-color:${safeIconColor};--category-icon-background:${safeBackground}">${iconSvgV2(iconId||"document")}</span>`;
+}
 categoryIcon = function(name){
   const meta=categoryMetaV14(name);
-  return meta?.icon ? iconSvgV2(meta.icon) : categoryIconLegacyV14(name);
+  if(meta?.icon){
+    return styledIconV142(
+      meta.icon,
+      categoryIconColorV142(meta),
+      categoryBackgroundColorV142(meta)
+    );
+  }
+  return categoryIconLegacyV14(name);
 };
 
 function loadQuickCategoryNames(categoryNames){
@@ -1480,20 +1521,22 @@ function renderManageCategoriesV14(){
   }
 
   library.forEach((item,index)=>{
-    const row=document.createElement("div"); row.className="manage-category-row-v2"; row.dataset.id=item.id;
+    const row=document.createElement("div"); row.className="manage-category-row-v2"; row.dataset.id=item.id; row.draggable=true;
     row.innerHTML=`
-      <span class="manage-category-swatch-v2" style="--cat-color:${escapeHtml(item.color||"#6f8f7a")}">${iconSvgV2(item.icon||"document")}</span>
-      <span class="manage-category-main-v2"><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.icon||"document")}</small></span>
+      <span class="manage-category-swatch-v2">${styledIconV142(item.icon||"document",categoryIconColorV142(item),categoryBackgroundColorV142(item))}</span>
+      <span class="manage-category-main-v2"><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.icon||"document")} · ${Number(appData?.categoryUsage?.[item.id]?.transactions||0)} history · ${Number(appData?.categoryUsage?.[item.id]?.monthlyRows||0)} months</small></span>
       <span class="manage-category-actions-v2">
         <button type="button" data-action="up" title="Move up" ${index===0?"disabled":""}>↑</button>
         <button type="button" data-action="down" title="Move down" ${index===library.length-1?"disabled":""}>↓</button>
+        <button type="button" data-action="merge" title="Merge">⇄</button>
         <button type="button" data-action="edit" title="Edit">✎</button>
         <button type="button" data-action="delete" class="danger" title="Delete">×</button>
       </span>`;
     row.addEventListener("click",async e=>{
       const action=e.target.closest("button")?.dataset.action; if(!action) return;
       if(action==="edit") return openCategoryEditorV14(row,item);
-      if(action==="delete") return deleteCategoryV14(item);
+      if(action==="delete") return deleteCategoryV15(item);
+      if(action==="merge") return mergeCategoryV15(item);
       if(action==="up"||action==="down") return moveCategoryV14(item.id,action);
     });
     list.appendChild(row);
@@ -1503,16 +1546,63 @@ function renderManageCategoriesV14(){
 function openCategoryEditorV14(row,item){
   if(row.querySelector('.category-edit-grid-v2')) return;
   const editor=document.createElement('div'); editor.className='category-edit-grid-v2';
-  editor.innerHTML=`<input class="wide" data-field="name" maxlength="40" value="${escapeHtml(item.name)}"><select data-field="icon"></select><input data-field="color" type="color" value="${escapeHtml(item.color||'#6f8f7a')}"><button class="cancel" type="button">Cancel</button><button class="save" type="button">Save</button>`;
-  populateCategoryIconSelectV14(editor.querySelector('select'),item.icon||'document');
+  const initialIconColor=categoryIconColorV142(item);
+  const initialBackground=categoryBackgroundColorV142(item);
+  const initialTransparent=initialBackground==="transparent";
+  editor.innerHTML=`
+    <input class="wide" data-field="name" maxlength="40" value="${escapeHtml(item.name)}">
+    <label>Icon<select data-field="icon"></select></label>
+    <label>SVG Color<input data-field="iconColor" type="color" value="${escapeHtml(initialIconColor)}"></label>
+    <label>Background<input data-field="backgroundColor" type="color" value="${escapeHtml(initialTransparent?"#eef3ef":initialBackground)}" ${initialTransparent?"disabled":""}></label>
+    <label class="category-transparent-label-v2 wide"><input data-field="transparent" type="checkbox" ${initialTransparent?"checked":""}><span>Transparent background</span></label>
+    <div class="category-style-preview-v2 wide" data-field="preview"></div>
+    <button class="cancel" type="button">Cancel</button>
+    <button class="save" type="button">Save</button>`;
+
+  const iconSelect=editor.querySelector('[data-field=icon]');
+  const iconColorInput=editor.querySelector('[data-field=iconColor]');
+  const backgroundInput=editor.querySelector('[data-field=backgroundColor]');
+  const transparentInput=editor.querySelector('[data-field=transparent]');
+  const preview=editor.querySelector('[data-field=preview]');
+
+  populateCategoryIconSelectV14(iconSelect,item.icon||'document');
+
+  const updatePreview=()=>{
+    backgroundInput.disabled=transparentInput.checked;
+    preview.innerHTML=styledIconV142(
+      iconSelect.value,
+      iconColorInput.value,
+      transparentInput.checked ? "transparent" : backgroundInput.value
+    );
+  };
+  [iconSelect,iconColorInput,backgroundInput,transparentInput].forEach(control=>{
+    control.addEventListener("input",updatePreview);
+    control.addEventListener("change",updatePreview);
+  });
+  updatePreview();
+
   editor.querySelector('.cancel').onclick=()=>editor.remove();
   editor.querySelector('.save').onclick=async()=>{
     const name=editor.querySelector('[data-field=name]').value.trim();
     if(!name) return showMessage('Category name is required.','error');
     try{
-      await api({action:'updateCategory',id:item.id,name,icon:editor.querySelector('[data-field=icon]').value,color:editor.querySelector('[data-field=color]').value});
+      const usage=appData?.categoryUsage?.[item.id]||{};
+      if(normalizeName(name)!==normalizeName(item.name)){
+        const ok=confirm(`Rename “${item.name}” to “${name}”?\n\nThis will also update ${Number(usage.transactions||0)} History transactions and ${Number(usage.monthlyRows||0)} monthly budget rows.`);
+        if(!ok) return;
+      }
+      const result=await api({
+        action:'updateCategory',
+        id:item.id,
+        name,
+        icon:iconSelect.value,
+        iconColor:iconColorInput.value,
+        backgroundColor:transparentInput.checked ? "transparent" : backgroundInput.value
+      });
       if(selectedCategory===item.name){selectedCategory=name;localStorage.setItem(LAST_CATEGORY_KEY,name)}
-      await loadData(); showMessage('Category updated.','success',1600);
+      await loadData();
+      const updated=Number(result.updatedHistoryRows||0);
+      showMessage(updated?`Category updated. ${updated} History entries renamed.`:'Category updated.','success',2400);
     }catch(err){showMessage(err.message,'error',3500)}
   };
   row.appendChild(editor);
@@ -1524,21 +1614,51 @@ async function addCategoryV14(){
   if(!name) return showMessage('Enter a category name.','error');
   const btn=$("addCategoryBtnV2"); btn.disabled=true; btn.textContent='Adding...';
   try{
-    const result=await api({action:'createCategory',month:activeMonth,name,budget,icon:$("categoryIconSelectV2").value,color:$("categoryColorInputV2").value});
+    const transparent=$("categoryTransparentBackgroundV2").checked;
+    const result=await api({
+      action:'createCategory',
+      month:activeMonth,
+      name,
+      budget,
+      icon:$("categoryIconSelectV2").value,
+      iconColor:$("categoryIconColorInputV2").value,
+      backgroundColor:transparent ? "transparent" : $("categoryBackgroundColorInputV2").value
+    });
     $("categoryNameInputV2").value=''; $("categoryBudgetInputV2").value='';
     selectedCategory=result.category?.name||name; localStorage.setItem(LAST_CATEGORY_KEY,selectedCategory);
     await loadData(); showMessage('Category created.','success',1800);
   }catch(err){showMessage(err.message,'error',3500)}finally{btn.disabled=false;btn.textContent='Add Category'}
 }
-async function deleteCategoryV14(item){
-  const typed=prompt(`Delete “${item.name}”?\n\nOld History entries will remain. Type DELETE to confirm.`,'');
-  if(typed!== 'DELETE') return;
+async function deleteCategoryV15(item){
+  const usage=appData?.categoryUsage?.[item.id]||{};
+  if(Number(usage.transactions||0)>0||Number(usage.monthlyRows||0)>0){
+    return showMessage('This category is in use. Rename it or merge it into another category.','error',4200);
+  }
+  if(!confirm(`Delete “${item.name}”?`)) return;
   try{
     await api({action:'deleteCategory',id:item.id});
     quickCategoryNames=quickCategoryNames.filter(n=>categoryIdV14(n)!==item.id); saveQuickCategoryNames();
     if(normalizeName(selectedCategory)===normalizeName(item.name)) selectedCategory='';
     await loadData(); showMessage('Category removed.','success',1800);
   }catch(err){showMessage(err.message,'error',3500)}
+}
+async function mergeCategoryV15(item){
+  const choices=categoryLibraryV14().filter(c=>c.id!==item.id);
+  if(!choices.length) return showMessage('There is no other category to merge into.','error');
+  const answer=prompt(`Merge “${item.name}” into which category?\n\n${choices.map(c=>c.name).join('\n')}`,'');
+  if(!answer) return;
+  const target=choices.find(c=>normalizeName(c.name)===normalizeName(answer));
+  if(!target) return showMessage('Destination category not found. Type its name exactly.','error',3500);
+  const usage=appData?.categoryUsage?.[item.id]||{};
+  if(!confirm(`Merge “${item.name}” into “${target.name}”?\n\n${Number(usage.transactions||0)} History transactions and ${Number(usage.monthlyRows||0)} monthly rows will be moved.`)) return;
+  try{
+    const result=await api({action:'mergeCategories',sourceId:item.id,targetId:target.id});
+    quickCategoryNames=quickCategoryNames.map(n=>categoryIdV14(n)===item.id?target.name:n);
+    saveQuickCategoryNames();
+    if(normalizeName(selectedCategory)===normalizeName(item.name)) selectedCategory=target.name;
+    await loadData();
+    showMessage(`Merged successfully. ${Number(result.updatedHistoryRows||0)} History entries updated.`,'success',3000);
+  }catch(err){showMessage(err.message,'error',4200)}
 }
 async function moveCategoryV14(id,direction){
   try{await api({action:'reorderCategory',id,direction});await loadData()}catch(err){showMessage(err.message,'error',3500)}
@@ -1552,8 +1672,30 @@ loadData=async function(){await loadDataBeforeV14();renderManageCategoriesV14();
 
 document.addEventListener('DOMContentLoaded',()=>{
   const add=$("addCategoryBtnV2"); if(add) add.addEventListener('click',addCategoryV14);
-  const sel=$("categoryIconSelectV2"); if(sel) populateCategoryIconSelectV14(sel,'document');
+  const sel=$("categoryIconSelectV2");
+  if(sel) populateCategoryIconSelectV14(sel,'document');
+
+  const iconColor=$("categoryIconColorInputV2");
+  const backgroundColor=$("categoryBackgroundColorInputV2");
+  const transparent=$("categoryTransparentBackgroundV2");
+  const preview=$("categoryStylePreviewV2");
+
+  const updateCreatePreview=()=>{
+    if(!sel||!iconColor||!backgroundColor||!transparent||!preview) return;
+    backgroundColor.disabled=transparent.checked;
+    preview.innerHTML=styledIconV142(
+      sel.value,
+      iconColor.value,
+      transparent.checked ? "transparent" : backgroundColor.value
+    );
+  };
+
+  [sel,iconColor,backgroundColor,transparent].filter(Boolean).forEach(control=>{
+    control.addEventListener("input",updateCreatePreview);
+    control.addEventListener("change",updateCreatePreview);
+  });
+  updateCreatePreview();
 });
 
-/* Phase 14.1 — start the app only after Category Management is fully registered. */
+/* Phase 15 — start the app only after Category Management is fully registered. */
 load();
