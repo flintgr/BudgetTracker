@@ -31,9 +31,10 @@ function moneyWhole(value){
 }
 
 
-const APP_VERSION = "v1.1.0-offline-beta";
+const APP_VERSION = "v1.1.1-sync-center-beta";
 const APP_DATA_CACHE_KEY = "appData:last";
 const HISTORY_CACHE_PREFIX = "history:";
+const SYNC_META_CACHE_KEY = "sync:meta";
 let syncInProgressV2 = false;
 
 function makeClientTransactionIdV2(){
@@ -56,6 +57,7 @@ async function updateSyncStatusV2(mode,message){
   if(label) label.textContent=message || (effective==="offline"?"Offline":effective==="syncing"?"Syncing…":effective==="error"?"Sync problem":"Online");
   if(pendingEl) pendingEl.textContent=pending ? pending+" pending" : "";
   if(button) button.classList.toggle("hidden", !pending || !navigator.onLine || effective==="syncing");
+  if(typeof renderSyncCenterV2 === "function") renderSyncCenterV2().catch(()=>{});
 }
 
 function applyOptimisticExpenseV2(data,expense){
@@ -80,28 +82,80 @@ async function cachedAppDataV2(){
   try{return (await window.BudgetOfflineStore.getCache(APP_DATA_CACHE_KEY))?.value || null}catch(_){return null}
 }
 
+async function getSyncMetaV2(){
+  try{return (await window.BudgetOfflineStore.getCache(SYNC_META_CACHE_KEY))?.value || {}}catch(_){return {}}
+}
+async function setSyncMetaV2(patch){
+  const current=await getSyncMetaV2();
+  const next={...current,...patch};
+  try{await window.BudgetOfflineStore.setCache(SYNC_META_CACHE_KEY,next)}catch(_){ }
+  return next;
+}
+function formatSyncDateV2(value){
+  if(!value) return "Never";
+  const date=new Date(value);
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString("el-GR",{dateStyle:"short",timeStyle:"short"});
+}
+async function renderSyncCenterV2(){
+  const queue=await pendingQueueV2();
+  const meta=await getSyncMetaV2();
+  const set=(id,value)=>{const el=$(id);if(el)el.textContent=value};
+  set("syncCenterConnectionV2",navigator.onLine?"Online":"Offline");
+  set("syncCenterPendingV2",String(queue.length));
+  set("syncCenterLastSuccessV2",formatSyncDateV2(meta.lastSuccessAt));
+  set("syncCenterLastFailureV2",meta.lastFailureAt?formatSyncDateV2(meta.lastFailureAt):"None");
+  set("syncCenterDurationV2",Number.isFinite(meta.lastDurationMs)?meta.lastDurationMs+" ms":"—");
+  set("syncCenterVersionV2",APP_VERSION);
+  const list=$("syncCenterQueueV2");
+  if(list){
+    if(!queue.length){list.innerHTML='<div class="sync-center-empty-v2">No pending transactions.</div>'}
+    else list.innerHTML=queue.map(item=>{
+      const p=item.payload||{};
+      const error=item.lastError?`<small>${escapeHtml(item.lastError)}</small>`:"";
+      return `<article class="sync-center-item-v2"><div><strong>${escapeHtml(p.category||"Expense")}</strong><span>${money(p.amount)} · ${escapeHtml(p.user||"")}</span>${error}</div><em>${Number(item.attempts||0)} retries</em></article>`;
+    }).join("");
+  }
+  const retry=$("syncCenterRetryBtnV2"); if(retry) retry.disabled=!navigator.onLine||!queue.length||syncInProgressV2;
+  const clear=$("syncCenterClearBtnV2"); if(clear) clear.disabled=!queue.length||syncInProgressV2;
+}
+
 async function syncPendingExpensesV2(){
   if(syncInProgressV2 || !navigator.onLine) return;
   const queue=await pendingQueueV2();
-  if(!queue.length){await updateSyncStatusV2("online");return;}
+  if(!queue.length){await updateSyncStatusV2("online");await renderSyncCenterV2();return;}
   syncInProgressV2=true;
+  const started=performance.now();
   await updateSyncStatusV2("syncing");
-  let failed=false;
+  await renderSyncCenterV2();
+  let failedCount=0, successCount=0, lastError="";
   for(const item of queue){
     try{
       await api({...item.payload, clientTransactionId:item.clientTransactionId});
       await window.BudgetOfflineStore.removeQueue(item.clientTransactionId);
+      successCount++;
     }catch(error){
-      failed=true;
-      await window.BudgetOfflineStore.markFailed(item.clientTransactionId,error.message);
+      failedCount++;
+      lastError=error.message||"Sync failed";
+      await window.BudgetOfflineStore.markFailed(item.clientTransactionId,lastError);
       if(!navigator.onLine) break;
     }
   }
+  const duration=Math.round(performance.now()-started);
   syncInProgressV2=false;
-  if(navigator.onLine && !failed){
+  const now=new Date().toISOString();
+  await setSyncMetaV2({
+    lastDurationMs:duration,
+    lastSuccessAt:successCount?now:(await getSyncMetaV2()).lastSuccessAt,
+    lastFailureAt:failedCount?now:null,
+    lastError:failedCount?lastError:"",
+    lastSuccessCount:successCount,
+    lastFailureCount:failedCount
+  });
+  if(navigator.onLine && successCount){
     try{await loadData({preferNetwork:true});}catch(_){ }
   }
-  await updateSyncStatusV2(failed?"error":(navigator.onLine?"online":"offline"));
+  await updateSyncStatusV2(failedCount?"error":(navigator.onLine?"online":"offline"));
+  await renderSyncCenterV2();
 }
 
 async function queueExpenseOfflineV2(payload,existingClientTransactionId){
@@ -1824,7 +1878,18 @@ window.addEventListener("offline",()=>updateSyncStatusV2("offline"));
 document.addEventListener("DOMContentLoaded",()=>{
   const syncButton=$("syncNowBtnV2");
   if(syncButton) syncButton.addEventListener("click",syncPendingExpensesV2);
+  const retry=$("syncCenterRetryBtnV2"); if(retry) retry.addEventListener("click",syncPendingExpensesV2);
+  const refresh=$("syncCenterRefreshBtnV2"); if(refresh) refresh.addEventListener("click",renderSyncCenterV2);
+  const clear=$("syncCenterClearBtnV2"); if(clear) clear.addEventListener("click",async()=>{
+    const queue=await pendingQueueV2();
+    if(!queue.length) return renderSyncCenterV2();
+    if(!confirm(`Delete ${queue.length} pending transaction(s) from this device? They will not be sent to Google Sheets.`)) return;
+    await window.BudgetOfflineStore.clearQueue();
+    await updateSyncStatusV2(navigator.onLine?"online":"offline","Queue cleared");
+    await renderSyncCenterV2();
+  });
   updateSyncStatusV2(navigator.onLine?"online":"offline");
+  renderSyncCenterV2();
   if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js").catch(console.warn);
 });
 

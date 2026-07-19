@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Phase 15.2 Performance Fix</title>
+<title>Family Budget — v1.1.1 Sync Center</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -246,6 +246,28 @@
           <button id="saveBudgetsBtnV2" class="save-budgets-btn-v2" type="button">
             Save Budgets
           </button>
+        </div>
+      </details>
+
+
+      <details class="settings-menu-v2" id="syncCenterMenuV2">
+        <summary>Sync Center</summary>
+        <div class="settings-menu-content-v2 sync-center-v2">
+          <div class="sync-center-grid-v2">
+            <div><span>Connection</span><strong id="syncCenterConnectionV2">—</strong></div>
+            <div><span>Pending</span><strong id="syncCenterPendingV2">0</strong></div>
+            <div><span>Last success</span><strong id="syncCenterLastSuccessV2">Never</strong></div>
+            <div><span>Last failure</span><strong id="syncCenterLastFailureV2">None</strong></div>
+            <div><span>Last duration</span><strong id="syncCenterDurationV2">—</strong></div>
+            <div><span>App version</span><strong id="syncCenterVersionV2">—</strong></div>
+          </div>
+          <div id="syncCenterQueueV2" class="sync-center-queue-v2"></div>
+          <div class="sync-center-actions-v2">
+            <button id="syncCenterRetryBtnV2" class="save-budgets-btn-v2" type="button">Retry Now</button>
+            <button id="syncCenterRefreshBtnV2" class="month-action-v2 clear" type="button">Refresh Status</button>
+            <button id="syncCenterClearBtnV2" class="month-action-v2 delete" type="button">Clear Pending Queue</button>
+          </div>
+          <p>Pending expenses stay safely on this device until they are synchronized. Clear Pending Queue is intended only for recovery or testing.</p>
         </div>
       </details>
 

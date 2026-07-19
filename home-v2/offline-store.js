@@ -104,6 +104,15 @@
         tx.onerror=()=>{db.close();reject(tx.error)};
       });
     },
+    async clearQueue(){
+      const db=await openDb();
+      return new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORES.queue,"readwrite");
+        tx.objectStore(STORES.queue).clear();
+        tx.oncomplete=()=>{db.close();resolve()};
+        tx.onerror=()=>{db.close();reject(tx.error)};
+      });
+    },
     async clearAll(){
       const db=await openDb();
       return new Promise((resolve,reject)=>{
