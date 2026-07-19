@@ -1895,3 +1895,14 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 /* Phase 16 — start after offline engine and category management are registered. */
 load().then(()=>syncPendingExpensesV2()).catch(console.error);
+
+const DEV_KEY='developerModeV2';
+function initDeveloperMode(){
+ const sync=document.getElementById('developerModeSwitchV2');
+ const panel=document.getElementById('developerPanelV2');
+ if(!sync||!panel)return;
+ const update=()=>{const on=localStorage.getItem(DEV_KEY)==='1';sync.checked=on;panel.style.display=on?'block':'none';};
+ sync.addEventListener('change',()=>{localStorage.setItem(DEV_KEY,sync.checked?'1':'0');update();});
+ update();
+}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(initDeveloperMode,0));
