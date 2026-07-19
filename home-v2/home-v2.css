@@ -1581,3 +1581,27 @@ nav button.active span{
 .manage-category-actions-v2{display:flex;gap:5px}.manage-category-actions-v2 button{width:34px;height:34px;border:0;border-radius:10px;background:#f1f4f1;cursor:pointer}.manage-category-actions-v2 button.danger{color:#b33a3a;background:#fff0f0}
 .category-edit-grid-v2{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:8px}.category-edit-grid-v2 input,.category-edit-grid-v2 select{min-height:40px;border:1px solid #dfe5df;border-radius:10px;padding:0 10px;font:inherit}.category-edit-grid-v2 .wide{grid-column:1/-1}.category-edit-grid-v2 button{min-height:40px;border:0;border-radius:10px;font-weight:700}.category-edit-grid-v2 .save{background:#243f35;color:white}.category-edit-grid-v2 .cancel{background:#eef2ef}
 @media(max-width:520px){.category-editor-card-v2{grid-template-columns:1fr}.category-editor-card-v2 .save-budgets-btn-v2{grid-column:1}.manage-category-row-v2{grid-template-columns:38px minmax(0,1fr) auto}.category-edit-grid-v2{grid-template-columns:1fr}}
+
+
+/* Phase 14.1 — visible Category Management backend/empty state */
+.manage-category-empty-v2{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:14px;
+  padding:16px;
+  border:1px dashed var(--line);
+  border-radius:18px;
+  background:#f8fafc;
+  color:var(--muted);
+  line-height:1.45;
+}
+.manage-category-empty-v2 strong{color:var(--ink)}
+.manage-category-empty-v2 span{font-size:14px}
+.manage-category-empty-v2 small{font-size:12px}
+.manage-category-empty-v2 code{
+  padding:2px 5px;
+  border-radius:6px;
+  background:#eef2f7;
+  color:var(--ink);
+}

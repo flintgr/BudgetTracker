@@ -1390,8 +1390,6 @@ async function load(){
   }
 }
 
-load();
-
 
 /* =========================================================
    Phase 14 — Category Management
@@ -1453,8 +1451,34 @@ function populateCategoryIconSelectV14(select, selected){
 function renderManageCategoriesV14(){
   const list=$("manageCategoryListV2");
   if(!list) return;
-  const library=categoryLibraryV14().slice().sort((a,b)=>(Number(a.order)||0)-(Number(b.order)||0));
+
+  const library=categoryLibraryV14()
+    .slice()
+    .sort((a,b)=>(Number(a.order)||0)-(Number(b.order)||0));
+
   list.innerHTML="";
+
+  if(!library.length){
+    const fallbackCategories = Array.isArray(appData?.categories) ? appData.categories : [];
+    const backendVersion = String(appData?.backendVersion || "");
+    const message = document.createElement("div");
+    message.className = "manage-category-empty-v2";
+
+    if(fallbackCategories.length && !Array.isArray(appData?.categoryLibrary)){
+      message.innerHTML = `
+        <strong>Category library is not available.</strong>
+        <span>The frontend is loaded, but the deployed Apps Script backend is not returning the Phase 14 category library. Deploy the included <code>backend/Code.gs</code> as a new version and reload the app.</span>
+        <small>Detected backend: ${escapeHtml(backendVersion || "unknown")}</small>`;
+    }else{
+      message.innerHTML = `
+        <strong>No active categories found.</strong>
+        <span>Create your first category above, or check the <code>Categories</code> sheet in Google Sheets.</span>`;
+    }
+
+    list.appendChild(message);
+    return;
+  }
+
   library.forEach((item,index)=>{
     const row=document.createElement("div"); row.className="manage-category-row-v2"; row.dataset.id=item.id;
     row.innerHTML=`
@@ -1530,3 +1554,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   const add=$("addCategoryBtnV2"); if(add) add.addEventListener('click',addCategoryV14);
   const sel=$("categoryIconSelectV2"); if(sel) populateCategoryIconSelectV14(sel,'document');
 });
+
+/* Phase 14.1 — start the app only after Category Management is fully registered. */
+load();

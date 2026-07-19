@@ -1,4 +1,4 @@
-const CACHE_NAME = "budget-tracker-phase14-category-management";
+const CACHE_NAME = "budget-tracker-phase14-1-category-management-fix";
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(["./","./index.html","./style.css","./config.js","./app.js","./manifest.json"])));
