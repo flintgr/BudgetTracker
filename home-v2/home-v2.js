@@ -1,6 +1,7 @@
 const $ = (id) => document.getElementById(id);
 
 const QUICK_STORAGE_KEY = "familyBudget.homeV2.quickCategories";
+const QUICK_IDS_STORAGE_KEY = "familyBudget.homeV2.quickCategoryIdsV15";
 const USER_STORAGE_KEY = "budgetTrackerUser";
 const MONTH_STORAGE_KEY = "budgetTrackerMonth";
 const LAST_CATEGORY_KEY = "budgetTrackerLastCategory";
@@ -1608,8 +1609,12 @@ function openCategoryEditorV14(row,item){
     const name=editor.querySelector('[data-field=name]').value.trim();
     if(!name) return showMessage('Category name is required.','error');
     try{
-      const usage=appData?.categoryUsage?.[item.id]||{};
+      let usage=appData?.categoryUsage?.[item.id]||null;
       if(normalizeName(name)!==normalizeName(item.name)){
+        if(!usage){
+          try{ usage=(await api({action:'getCategoryUsage',id:item.id})).usage||{}; }
+          catch(_){ usage={}; }
+        }
         const ok=confirm(`Rename “${item.name}” to “${name}”?\n\nThis will also update ${Number(usage.transactions||0)} History transactions and ${Number(usage.monthlyRows||0)} monthly budget rows.`);
         if(!ok) return;
       }
@@ -1652,7 +1657,11 @@ async function addCategoryV14(){
   }catch(err){showMessage(err.message,'error',3500)}finally{btn.disabled=false;btn.textContent='Add Category'}
 }
 async function deleteCategoryV15(item){
-  const usage=appData?.categoryUsage?.[item.id]||{};
+  let usage=appData?.categoryUsage?.[item.id]||null;
+  if(!usage){
+    try{ usage=(await api({action:'getCategoryUsage',id:item.id})).usage||{}; }
+    catch(_){ usage={}; }
+  }
   if(Number(usage.transactions||0)>0||Number(usage.monthlyRows||0)>0){
     return showMessage('This category is in use. Rename it or merge it into another category.','error',4200);
   }
@@ -1671,7 +1680,11 @@ async function mergeCategoryV15(item){
   if(!answer) return;
   const target=choices.find(c=>normalizeName(c.name)===normalizeName(answer));
   if(!target) return showMessage('Destination category not found. Type its name exactly.','error',3500);
-  const usage=appData?.categoryUsage?.[item.id]||{};
+  let usage=appData?.categoryUsage?.[item.id]||null;
+  if(!usage){
+    try{ usage=(await api({action:'getCategoryUsage',id:item.id})).usage||{}; }
+    catch(_){ usage={}; }
+  }
   if(!confirm(`Merge “${item.name}” into “${target.name}”?\n\n${Number(usage.transactions||0)} History transactions and ${Number(usage.monthlyRows||0)} monthly rows will be moved.`)) return;
   try{
     const result=await api({action:'mergeCategories',sourceId:item.id,targetId:target.id});
