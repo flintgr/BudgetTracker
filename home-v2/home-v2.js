@@ -6,6 +6,15 @@ const USER_STORAGE_KEY = "budgetTrackerUser";
 const MONTH_STORAGE_KEY = "budgetTrackerMonth";
 const LAST_CATEGORY_KEY = "budgetTrackerLastCategory";
 const MAX_QUICK_CATEGORIES = 8;
+const APP_VERSION = "1.0.1";
+const APP_LOAD_STARTED_AT = performance.now();
+
+const diagnosticsV2 = {
+  initialLoadMs: null,
+  lastApiAction: "—",
+  lastApiMs: null,
+  lastApiResult: "—"
+};
 
 let appData = null;
 let activeUser = localStorage.getItem(USER_STORAGE_KEY) || window.FB_CONFIG.DEFAULT_USER || "";
@@ -31,6 +40,12 @@ function moneyWhole(value){
 }
 
 function api(params){
+  const apiStartedAt = performance.now();
+  const apiAction = String(params?.action || "unknown");
+  diagnosticsV2.lastApiAction = apiAction;
+  diagnosticsV2.lastApiResult = "Running";
+  updateDiagnosticsV2();
+
   return new Promise((resolve, reject) => {
     const callback = "fbv2_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
     const url = new URL(window.FB_CONFIG.API_URL);
@@ -59,6 +74,9 @@ function api(params){
       // "fbv2_... is not defined" in the browser console.
       window[callback] = function(){};
       script.remove();
+      diagnosticsV2.lastApiMs = Math.round(performance.now() - apiStartedAt);
+      diagnosticsV2.lastApiResult = "Timeout";
+      updateDiagnosticsV2();
       reject(new Error("API timeout after 120 seconds"));
 
       setTimeout(() => {
@@ -80,6 +98,9 @@ function api(params){
         reject(new Error(data?.error || "API error"));
         return;
       }
+      diagnosticsV2.lastApiMs = Math.round(performance.now() - apiStartedAt);
+      diagnosticsV2.lastApiResult = "Success";
+      updateDiagnosticsV2();
       resolve(data);
     };
 
@@ -95,6 +116,38 @@ function api(params){
   });
 }
 
+
+function formatDurationV2(ms){
+  if(ms === null || ms === undefined || !Number.isFinite(Number(ms))) return "—";
+  const value = Number(ms);
+  return value < 1000 ? Math.round(value) + " ms" : (value / 1000).toFixed(2) + " s";
+}
+
+function updateDiagnosticsV2(){
+  const setText = (id, value) => { const el=$(id); if(el) el.textContent=value; };
+  setText("diagAppVersionV2", "v" + APP_VERSION);
+  setText("diagOnlineV2", navigator.onLine ? "Online" : "Offline");
+  setText("diagLoadTimeV2", formatDurationV2(diagnosticsV2.initialLoadMs));
+  setText("diagApiActionV2", diagnosticsV2.lastApiAction || "—");
+  setText("diagApiTimeV2", formatDurationV2(diagnosticsV2.lastApiMs));
+  setText("diagApiResultV2", diagnosticsV2.lastApiResult || "—");
+  setText("diagMonthV2", activeMonth || "—");
+  setText("diagUserV2", activeUser || "—");
+}
+
+async function clearAppCacheV2(){
+  const status=$("diagStatusV2");
+  try{
+    if("caches" in window){
+      const keys=await caches.keys();
+      await Promise.all(keys.map(key=>caches.delete(key)));
+    }
+    if(status) status.textContent="App cache cleared. Reload the page to fetch fresh files.";
+  }catch(error){
+    if(status) status.textContent="Cache clear failed: " + error.message;
+  }
+  updateDiagnosticsV2();
+}
 
 function normalizeMonthKeyV2(value){
   const raw = String(value || "")
@@ -1396,6 +1449,8 @@ async function load(){
     $("monthPill").textContent = "Loading...";
     bindUi();
     await loadData();
+    diagnosticsV2.initialLoadMs = Math.round(performance.now() - APP_LOAD_STARTED_AT);
+    updateDiagnosticsV2();
   }catch(error){
     $("monthPill").textContent = "Error";
     showMessage(error.message, "error", 0);
@@ -1683,6 +1738,14 @@ const loadDataBeforeV14=loadData;
 loadData=async function(){await loadDataBeforeV14();renderManageCategoriesV14();const s=$("categoryIconSelectV2");if(s&&!s.options.length)populateCategoryIconSelectV14(s,"document")};
 
 document.addEventListener('DOMContentLoaded',()=>{
+  updateDiagnosticsV2();
+  window.addEventListener('online',updateDiagnosticsV2);
+  window.addEventListener('offline',updateDiagnosticsV2);
+  const refreshDiagnostics=$("refreshDiagnosticsBtnV2");
+  if(refreshDiagnostics) refreshDiagnostics.addEventListener('click',updateDiagnosticsV2);
+  const clearCache=$("clearAppCacheBtnV2");
+  if(clearCache) clearCache.addEventListener('click',clearAppCacheV2);
+
   const add=$("addCategoryBtnV2"); if(add) add.addEventListener('click',addCategoryV14);
   const sel=$("categoryIconSelectV2");
   if(sel) populateCategoryIconSelectV14(sel,'document');

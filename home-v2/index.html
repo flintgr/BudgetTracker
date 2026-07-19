@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — Phase 15.2 Performance Fix</title>
+<title>Family Budget — v1.0.1 Diagnostics</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -245,6 +245,29 @@
           <button id="saveBudgetsBtnV2" class="save-budgets-btn-v2" type="button">
             Save Budgets
           </button>
+        </div>
+      </details>
+
+
+      <details class="settings-menu-v2" id="developerMenuV2">
+        <summary>Developer Diagnostics</summary>
+        <div class="settings-menu-content-v2 developer-diagnostics-v2">
+          <p>Read-only diagnostics for performance and connectivity testing.</p>
+          <div class="diagnostic-grid-v2">
+            <div><span>App version</span><strong id="diagAppVersionV2">v1.0.1</strong></div>
+            <div><span>Connection</span><strong id="diagOnlineV2">—</strong></div>
+            <div><span>Initial load</span><strong id="diagLoadTimeV2">—</strong></div>
+            <div><span>Last API action</span><strong id="diagApiActionV2">—</strong></div>
+            <div><span>Last API time</span><strong id="diagApiTimeV2">—</strong></div>
+            <div><span>Last API result</span><strong id="diagApiResultV2">—</strong></div>
+            <div><span>Selected month</span><strong id="diagMonthV2">—</strong></div>
+            <div><span>Selected user</span><strong id="diagUserV2">—</strong></div>
+          </div>
+          <div class="diagnostic-actions-v2">
+            <button id="refreshDiagnosticsBtnV2" type="button">Refresh Diagnostics</button>
+            <button id="clearAppCacheBtnV2" type="button">Clear App Cache</button>
+          </div>
+          <p id="diagStatusV2" class="diagnostic-status-v2">Diagnostics ready.</p>
         </div>
       </details>
 
