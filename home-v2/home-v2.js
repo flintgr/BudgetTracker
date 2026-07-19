@@ -249,30 +249,7 @@ function getDefaultQuickCategories(categoryNames){
   return result.slice(0, MAX_QUICK_CATEGORIES);
 }
 
-function loadQuickCategoryNames(categoryNames){
-  try{
-    const saved = JSON.parse(localStorage.getItem(QUICK_STORAGE_KEY) || "[]");
-    if(!Array.isArray(saved)) return getDefaultQuickCategories(categoryNames);
 
-    const byNormalized = new Map(
-      categoryNames.map(name => [normalizeName(name), name])
-    );
-
-    const valid = saved
-      .map(name => byNormalized.get(normalizeName(name)))
-      .filter(Boolean);
-
-    if(valid.length) return [...new Set(valid)].slice(0, MAX_QUICK_CATEGORIES);
-  }catch(error){
-    console.warn("Could not read Quick Categories settings.", error);
-  }
-
-  return getDefaultQuickCategories(categoryNames);
-}
-
-function saveQuickCategoryNames(){
-  localStorage.setItem(QUICK_STORAGE_KEY, JSON.stringify(quickCategoryNames));
-}
 
 function parseAmount(value){
   const raw = String(value || "").trim().replace(/\s/g, "");
