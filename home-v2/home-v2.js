@@ -31,7 +31,7 @@ function moneyWhole(value){
 }
 
 
-const APP_VERSION = "v1.1.4-category-rename-fix";
+const APP_VERSION = "v1.1.5-history-delete-state-fix";
 const APP_DATA_CACHE_KEY = "appData:last";
 const HISTORY_CACHE_PREFIX = "history:";
 const SYNC_META_CACHE_KEY = "sync:meta";
