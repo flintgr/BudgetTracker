@@ -1358,17 +1358,39 @@ async function deleteHistoryTransactionV2(transaction){
 
   if(!approved) return;
 
+  const deleteButton = document.querySelector(
+    `.history-row-v2[data-transaction-id="${CSS.escape(String(transaction.id || ""))}"] .history-delete-v2`
+  );
+  const originalLabel = deleteButton ? deleteButton.textContent : "Delete";
+
   try{
+    if(deleteButton){
+      deleteButton.disabled = true;
+      deleteButton.textContent = "Deleting…";
+    }
+
     await api({
       action:"deleteTransaction",
-      id:transaction.id
+      id:transaction.id,
+      relatedId:transaction.relatedId || transaction.id,
+      user:transaction.user,
+      month:transaction.month,
+      categoryId:transaction.categoryId,
+      category:transaction.category,
+      amount:transaction.amount
     });
 
     showMessage("Transaction deleted.", "success");
-    await loadData();
+    await loadData({preferNetwork:true});
     await loadHistoryV2();
   }catch(error){
-    showMessage(error.message, "error", 3500);
+    console.error("Delete transaction failed", error, transaction);
+    showMessage("Delete failed: " + error.message, "error", 5000);
+  }finally{
+    if(deleteButton && document.body.contains(deleteButton)){
+      deleteButton.disabled = false;
+      deleteButton.textContent = originalLabel;
+    }
   }
 }
 
