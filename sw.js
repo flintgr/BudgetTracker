@@ -1,4 +1,4 @@
-const CACHE_NAME = "budget-tracker-v1-2-1-developer-tools";
+const CACHE_NAME = "budget-tracker-v1-3-0-receipt-scanner-ui";
 const APP_SHELL = [
   "./", "./index.html", "./style.css", "./config.js", "./app.js", "./manifest.json",
   "./icon-192.png", "./icon-512.png",

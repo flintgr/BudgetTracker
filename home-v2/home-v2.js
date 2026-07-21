@@ -31,7 +31,7 @@ function moneyWhole(value){
 }
 
 
-const APP_VERSION = "v1.2.1-developer-tools";
+const APP_VERSION = "v1.3.0-receipt-scanner-ui";
 const developerPerformanceV2={historyLoadMs:null,dashboardLoadMs:null,appDataLoadMs:null};
 const developerErrorsV2=[];
 let apiDiagnosticsV2={status:"Not checked",lastCheckedAt:"",durationMs:null,lastError:""};
@@ -1423,6 +1423,7 @@ function setActiveMainViewV2(viewName){
   $("historyViewV2").classList.toggle("hidden", viewName !== "history");
   $("dashboardViewV2").classList.toggle("hidden", viewName !== "dashboard");
   $("settingsView").classList.toggle("hidden", viewName !== "settings");
+  $("receiptScannerViewV2").classList.toggle("hidden", viewName !== "scanner");
 
   $("homeNavBtn").classList.toggle("active", viewName === "home");
   $("historyNavBtn").classList.toggle("active", viewName === "history");
@@ -1433,6 +1434,7 @@ function setActiveMainViewV2(viewName){
     viewName === "history" ? "History" :
     viewName === "dashboard" ? "Dashboard" :
     viewName === "settings" ? "Settings" :
+    viewName === "scanner" ? "Receipt Scanner" :
     "Home";
 }
 
@@ -1468,6 +1470,7 @@ function bindUi(){
 
   $("historyNavBtn").addEventListener("click", openHistoryV2);
   $("dashboardNavBtn").addEventListener("click", openDashboardV2);
+  bindReceiptScannerV2();
 
   $("historyMonthFilterV2").addEventListener("change", loadHistoryV2);
   $("historyUserFilterV2").addEventListener("change", loadHistoryV2);
@@ -2090,3 +2093,74 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(initDeveloperMode,0)
 window.addEventListener('online',()=>renderDeveloperDiagnosticsV2().catch(()=>{}));
 window.addEventListener('offline',()=>renderDeveloperDiagnosticsV2().catch(()=>{}));
 
+
+
+// v1.3.0 — Receipt Scanner UI prototype
+let receiptScannerObjectUrlV2 = "";
+let receiptScannerRotationV2 = 0;
+
+function showScannerStepV2(step){
+  ["scannerStartStepV2","scannerPreviewStepV2","scannerReviewStepV2"].forEach(id => $(id).classList.add("hidden"));
+  $(step).classList.remove("hidden");
+}
+
+function resetReceiptScannerV2(){
+  if(receiptScannerObjectUrlV2){ URL.revokeObjectURL(receiptScannerObjectUrlV2); receiptScannerObjectUrlV2 = ""; }
+  receiptScannerRotationV2 = 0;
+  $("receiptPreviewImageV2").removeAttribute("src");
+  $("receiptReviewThumbV2").removeAttribute("src");
+  $("receiptPreviewImageV2").style.transform = "rotate(0deg)";
+  $("receiptCameraInputV2").value = "";
+  $("receiptGalleryInputV2").value = "";
+  $("scannerCropNoteV2").classList.add("hidden");
+  showScannerStepV2("scannerStartStepV2");
+}
+
+function openReceiptScannerV2(){
+  resetReceiptScannerV2();
+  $("scannerUserV2").textContent = activeUser || "—";
+  $("receiptReviewUserV2").textContent = activeUser || "—";
+  $("receiptReviewDateV2").textContent = new Intl.DateTimeFormat("el-GR",{day:"numeric",month:"short",year:"numeric"}).format(new Date());
+  setActiveMainViewV2("scanner");
+}
+
+function closeReceiptScannerV2(){
+  resetReceiptScannerV2();
+  setActiveMainViewV2("home");
+}
+
+function loadReceiptPhotoV2(file){
+  if(!file) return;
+  if(!file.type.startsWith("image/")){ showMessage("Please choose an image file.","error",3000); return; }
+  if(receiptScannerObjectUrlV2) URL.revokeObjectURL(receiptScannerObjectUrlV2);
+  receiptScannerObjectUrlV2 = URL.createObjectURL(file);
+  receiptScannerRotationV2 = 0;
+  $("receiptPreviewImageV2").src = receiptScannerObjectUrlV2;
+  $("receiptReviewThumbV2").src = receiptScannerObjectUrlV2;
+  $("receiptPreviewImageV2").style.transform = "rotate(0deg)";
+  showScannerStepV2("scannerPreviewStepV2");
+}
+
+function bindReceiptScannerV2(){
+  $("scanReceiptBtnV2").addEventListener("click",openReceiptScannerV2);
+  $("scannerBackBtnV2").addEventListener("click",closeReceiptScannerV2);
+  $("takeReceiptPhotoBtnV2").addEventListener("click",()=>$("receiptCameraInputV2").click());
+  $("chooseReceiptPhotoBtnV2").addEventListener("click",()=>$("receiptGalleryInputV2").click());
+  $("receiptCameraInputV2").addEventListener("change",event=>loadReceiptPhotoV2(event.target.files?.[0]));
+  $("receiptGalleryInputV2").addEventListener("change",event=>loadReceiptPhotoV2(event.target.files?.[0]));
+  $("rotateReceiptBtnV2").addEventListener("click",()=>{
+    receiptScannerRotationV2=(receiptScannerRotationV2+90)%360;
+    $("receiptPreviewImageV2").style.transform=`rotate(${receiptScannerRotationV2}deg)`;
+  });
+  $("cropReceiptBtnV2").addEventListener("click",()=>$("scannerCropNoteV2").classList.toggle("hidden"));
+  $("retakeReceiptBtnV2").addEventListener("click",resetReceiptScannerV2);
+  $("continueReceiptBtnV2").addEventListener("click",()=>{
+    $("receiptReviewUserV2").textContent=activeUser||"—";
+    showScannerStepV2("scannerReviewStepV2");
+  });
+  $("cancelReceiptBtnV2").addEventListener("click",closeReceiptScannerV2);
+  $("saveReceiptPrototypeBtnV2").addEventListener("click",()=>{
+    showMessage("Receipt Scanner UI is ready. OCR and saving arrive in the next update.","success",4200);
+    closeReceiptScannerV2();
+  });
+}

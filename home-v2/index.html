@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — v1.2.1 Developer Tools</title>
+<title>Family Budget — v1.3.0 Receipt Scanner UI</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -87,6 +87,7 @@
         <input id="expenseNoteV2" type="text" maxlength="80" placeholder="What was it for? (optional)" autocomplete="off">
       </div>
 <button id="addExpenseBtnV2" class="add" type="button"><span>＋</span>Add Expense</button>
+<button id="scanReceiptBtnV2" class="scan-receipt-home-v2" type="button"><span aria-hidden="true">▣</span>Scan Receipt</button>
 </section>
 
 <div id="homeMessage" class="home-message hidden"></div>
@@ -94,6 +95,56 @@
 </div>
 
     
+
+    <section id="receiptScannerViewV2" class="receipt-scanner-view-v2 hidden" aria-labelledby="receiptScannerTitleV2">
+      <div class="scanner-topbar-v2">
+        <button id="scannerBackBtnV2" class="scanner-back-v2" type="button" aria-label="Back to Home">←</button>
+        <div><span>New expense</span><h2 id="receiptScannerTitleV2">Receipt Scanner</h2></div>
+        <span class="scanner-user-v2">Scanning as <strong id="scannerUserV2">—</strong></span>
+      </div>
+
+      <section id="scannerStartStepV2" class="scanner-step-v2">
+        <div class="scanner-hero-v2">
+          <div class="scanner-camera-icon-v2" aria-hidden="true">▣</div>
+          <h3>Scan a receipt</h3>
+          <p>Take a clear photo or choose an existing image.</p>
+        </div>
+        <div class="scanner-source-grid-v2">
+          <button id="takeReceiptPhotoBtnV2" class="scanner-source-card-v2" type="button"><span aria-hidden="true">●</span><strong>Take Photo</strong><small>Open the camera</small></button>
+          <button id="chooseReceiptPhotoBtnV2" class="scanner-source-card-v2" type="button"><span aria-hidden="true">▧</span><strong>Choose Photo</strong><small>Use an existing image</small></button>
+        </div>
+        <input id="receiptCameraInputV2" class="scanner-file-input-v2" type="file" accept="image/*" capture="environment">
+        <input id="receiptGalleryInputV2" class="scanner-file-input-v2" type="file" accept="image/*">
+      </section>
+
+      <section id="scannerPreviewStepV2" class="scanner-step-v2 hidden">
+        <div class="scanner-section-heading-v2"><span>Step 2</span><h3>Adjust Receipt</h3><p>Check the photo before continuing.</p></div>
+        <div class="scanner-preview-frame-v2"><img id="receiptPreviewImageV2" alt="Receipt preview"></div>
+        <div class="scanner-adjust-actions-v2">
+          <button id="rotateReceiptBtnV2" type="button">↻ Rotate</button>
+          <button id="cropReceiptBtnV2" type="button">⌗ Crop</button>
+        </div>
+        <p id="scannerCropNoteV2" class="scanner-inline-note-v2 hidden">Crop controls will be enabled with the OCR engine.</p>
+        <div class="scanner-bottom-actions-v2"><button id="retakeReceiptBtnV2" class="secondary" type="button">Retake</button><button id="continueReceiptBtnV2" class="primary" type="button">Continue</button></div>
+      </section>
+
+      <section id="scannerReviewStepV2" class="scanner-step-v2 hidden">
+        <div class="scanner-section-heading-v2"><span>Step 3</span><h3>Receipt Review</h3><p>OCR fields arrive in the next update.</p></div>
+        <article class="receipt-review-card-v2">
+          <img id="receiptReviewThumbV2" alt="Selected receipt">
+          <div class="receipt-review-placeholder-v2">
+            <span>Merchant</span><strong>Waiting for OCR</strong>
+            <span>Amount</span><strong>€—</strong>
+            <span>Category</span><strong>Not selected</strong>
+            <span>Date</span><strong id="receiptReviewDateV2">Today</strong>
+          </div>
+        </article>
+        <div class="scanner-assignment-v2"><span>Expense owner</span><strong id="receiptReviewUserV2">—</strong><small>Uses the user selected on Home.</small></div>
+        <div class="scanner-bottom-actions-v2"><button id="cancelReceiptBtnV2" class="secondary" type="button">Cancel</button><button id="saveReceiptPrototypeBtnV2" class="primary" type="button">Save</button></div>
+        <p class="scanner-inline-note-v2">UI prototype only — this version does not create an expense.</p>
+      </section>
+    </section>
+
     <section id="historyViewV2" class="history-view-v2 hidden">
       <section class="history-hero-v2">
         <div>
