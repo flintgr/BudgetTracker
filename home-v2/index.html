@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — v1.2.0 Developer Diagnostics</title>
+<title>Family Budget — v1.2.1 Developer Tools</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -291,8 +291,35 @@
               <div><span>Last successful sync</span><strong id="devLastSyncV2">Never</strong></div>
               <div><span>Last sync error</span><strong id="devLastSyncErrorV2">None</strong></div>
             </div>
-            <button id="refreshDeveloperDiagnosticsBtnV2" class="save-budgets-btn-v2" type="button">Refresh Diagnostics</button>
-            <p>No data is changed by these diagnostics.</p>
+            <div class="developer-section-v2">
+              <strong class="developer-section-title-v2">Performance</strong>
+              <div class="developer-grid-v2">
+                <div><span>App data load</span><strong id="devAppDataLoadV2">Not measured</strong></div>
+                <div><span>History load</span><strong id="devHistoryLoadV2">Not measured</strong></div>
+                <div><span>Dashboard load</span><strong id="devDashboardLoadV2">Not measured</strong></div>
+              </div>
+            </div>
+            <div class="developer-section-v2">
+              <strong class="developer-section-title-v2">Session Info</strong>
+              <div class="developer-grid-v2">
+                <div><span>Browser</span><strong id="devBrowserV2">—</strong></div>
+                <div><span>Platform</span><strong id="devPlatformV2">—</strong></div>
+                <div><span>Screen</span><strong id="devScreenV2">—</strong></div>
+                <div><span>Mode</span><strong id="devPwaModeV2">—</strong></div>
+                <div><span>Timezone</span><strong id="devTimezoneV2">—</strong></div>
+                <div><span>Current view</span><strong id="devCurrentViewV2">—</strong></div>
+              </div>
+            </div>
+            <div class="developer-section-v2">
+              <strong class="developer-section-title-v2">Last Errors</strong>
+              <div id="devErrorsListV2" class="developer-errors-v2"></div>
+            </div>
+            <div class="developer-actions-v2">
+              <button id="refreshDeveloperDiagnosticsBtnV2" class="save-budgets-btn-v2" type="button">Refresh Diagnostics</button>
+              <button id="copyDeveloperDiagnosticsBtnV2" class="month-action-v2 clear" type="button">Copy Diagnostics</button>
+              <button id="refreshDeveloperDataBtnV2" class="month-action-v2 clear" type="button">Refresh App Data</button>
+            </div>
+            <p>Developer tools are read-only and do not delete local or cloud data.</p>
           </section>
         </div>
       </details>

@@ -31,7 +31,9 @@ function moneyWhole(value){
 }
 
 
-const APP_VERSION = "v1.2.0-developer-diagnostics";
+const APP_VERSION = "v1.2.1-developer-tools";
+const developerPerformanceV2={historyLoadMs:null,dashboardLoadMs:null,appDataLoadMs:null};
+const developerErrorsV2=[];
 let apiDiagnosticsV2={status:"Not checked",lastCheckedAt:"",durationMs:null,lastError:""};
 const APP_DATA_CACHE_KEY = "appData:last";
 const HISTORY_CACHE_PREFIX = "history:";
@@ -1205,9 +1207,11 @@ function renderDashboardV2(){
 }
 
 async function openDashboardV2(){
+  const developerStartedAtV2=performance.now();
   setActiveMainViewV2("dashboard");
   renderDashboardV2();
   await loadUserSpendingV2();
+  developerPerformanceV2.dashboardLoadMs=Math.round(performance.now()-developerStartedAtV2);
 }
 
 function addSelectOption(select, value, label){
@@ -1330,6 +1334,7 @@ function renderHistoryItemsV2(items){
 }
 
 async function loadHistoryV2(){
+  const developerStartedAtV2=performance.now();
   const status = $("historyStatusV2");
   const list = $("historyListV2");
   const filters = getHistoryFiltersV2();
@@ -1365,6 +1370,8 @@ async function loadHistoryV2(){
     if(filters.user) items=items.filter(item=>item.user===filters.user);
     updateHistorySummaryV2(items); renderHistoryItemsV2(items);
     status.textContent=(navigator.onLine?"Saved history":"Offline history")+" · "+items.length+" rows";
+  }finally{
+    developerPerformanceV2.historyLoadMs=Math.round(performance.now()-developerStartedAtV2);
   }
 }
 
@@ -1565,6 +1572,7 @@ async function renderLoadedDataV2(){
 }
 
 async function loadData(options={}){
+  const developerStartedAtV2=performance.now();
   const cached=await cachedAppDataV2();
   if(cached && !options.preferNetwork){
     appData=cached;
@@ -1573,6 +1581,7 @@ async function loadData(options={}){
   if(!navigator.onLine){
     if(!appData) throw new Error("No offline data is available yet. Open the app once while online.");
     await updateSyncStatusV2("offline");
+    developerPerformanceV2.appDataLoadMs=Math.round(performance.now()-developerStartedAtV2);
     return appData;
   }
   try{
@@ -1581,12 +1590,14 @@ async function loadData(options={}){
     await cacheAppDataV2(appData);
     await renderLoadedDataV2();
     await updateSyncStatusV2("online");
+    developerPerformanceV2.appDataLoadMs=Math.round(performance.now()-developerStartedAtV2);
     return appData;
   }catch(error){
     if(cached){
       appData=cached;
       await renderLoadedDataV2();
       await updateSyncStatusV2("error","Using saved data");
+      developerPerformanceV2.appDataLoadMs=Math.round(performance.now()-developerStartedAtV2);
       return appData;
     }
     throw error;
@@ -1937,18 +1948,45 @@ load().then(()=>syncPendingExpensesV2()).catch(console.error);
 
 const DEV_KEY='developerModeV2';
 
+function recordDeveloperErrorV2(source,error){
+  const message=String(error?.message||error||'Unknown error');
+  developerErrorsV2.unshift({at:new Date().toISOString(),source:String(source||'App'),message});
+  if(developerErrorsV2.length>10) developerErrorsV2.length=10;
+  renderDeveloperErrorsV2();
+}
+
+function currentViewNameV2(){
+  if(!$('historyViewV2')?.classList.contains('hidden')) return 'History';
+  if(!$('dashboardViewV2')?.classList.contains('hidden')) return 'Dashboard';
+  if(!$('settingsView')?.classList.contains('hidden')) return 'Settings';
+  return 'Home';
+}
+
+function pwaModeV2(){
+  return (window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone===true) ? 'Standalone PWA' : 'Browser';
+}
+
+function formatDurationV2(value){return Number.isFinite(value)?`${value} ms`:'Not measured'}
+
+function renderDeveloperErrorsV2(){
+  const list=$('devErrorsListV2');
+  if(!list) return;
+  if(!developerErrorsV2.length){list.innerHTML='<div class="developer-empty-v2">No JavaScript errors recorded in this session.</div>';return;}
+  list.innerHTML=developerErrorsV2.map(item=>`<article><strong>${escapeHtml(item.source)}</strong><span>${escapeHtml(item.message)}</span><small>${escapeHtml(formatSyncDateV2(item.at))}</small></article>`).join('');
+}
+
 async function getCachedTransactionCountV2(){
   try{
-    const record=await window.BudgetOfflineStore.getCache(HISTORY_CACHE_PREFIX+activeMonth);
-    return Array.isArray(record?.value)?record.value.length:0;
-  }catch(_){return 0;}
+    const cached=await window.BudgetOfflineStore.getCache(HISTORY_CACHE_PREFIX+activeMonth);
+    return Array.isArray(cached?.value)?cached.value.length:0;
+  }catch(_){return 0}
 }
 
 async function renderDeveloperDiagnosticsV2(){
-  const set=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
   const queue=await pendingQueueV2();
   const meta=await getSyncMetaV2();
   const cachedCount=await getCachedTransactionCountV2();
+  const set=(id,value)=>{const el=$(id);if(el)el.textContent=value};
   set('devAppVersionV2',APP_VERSION);
   set('devConnectionV2',navigator.onLine?'Online':'Offline');
   set('devApiStatusV2',apiDiagnosticsV2.status+(Number.isFinite(apiDiagnosticsV2.durationMs)?` · ${apiDiagnosticsV2.durationMs} ms`:''));
@@ -1958,6 +1996,16 @@ async function renderDeveloperDiagnosticsV2(){
   set('devLastSyncV2',formatSyncDateV2(meta.lastSuccessAt));
   set('devLastSyncErrorV2',meta.lastError||apiDiagnosticsV2.lastError||'None');
   set('devLastCheckedV2',apiDiagnosticsV2.lastCheckedAt?formatSyncDateV2(apiDiagnosticsV2.lastCheckedAt):'Not checked');
+  set('devHistoryLoadV2',formatDurationV2(developerPerformanceV2.historyLoadMs));
+  set('devDashboardLoadV2',formatDurationV2(developerPerformanceV2.dashboardLoadMs));
+  set('devAppDataLoadV2',formatDurationV2(developerPerformanceV2.appDataLoadMs));
+  set('devBrowserV2',navigator.userAgentData?.brands?.map(x=>`${x.brand} ${x.version}`).join(', ')||navigator.userAgent);
+  set('devPlatformV2',navigator.userAgentData?.platform||navigator.platform||'Unknown');
+  set('devScreenV2',`${window.screen.width} × ${window.screen.height} · viewport ${window.innerWidth} × ${window.innerHeight}`);
+  set('devPwaModeV2',pwaModeV2());
+  set('devTimezoneV2',Intl.DateTimeFormat().resolvedOptions().timeZone||'Unknown');
+  set('devCurrentViewV2',currentViewNameV2());
+  renderDeveloperErrorsV2();
 }
 
 async function refreshDeveloperDiagnosticsV2(){
@@ -1971,11 +2019,53 @@ async function refreshDeveloperDiagnosticsV2(){
       apiDiagnosticsV2={status:'Offline',lastCheckedAt:new Date().toISOString(),durationMs:null,lastError:'Device is offline'};
     }
   }catch(error){
+    recordDeveloperErrorV2('Diagnostics API',error);
     console.warn('Developer diagnostics API check failed',error);
   }finally{
     await renderDeveloperDiagnosticsV2();
     if(button){button.disabled=false;button.textContent=oldLabel;}
   }
+}
+
+async function buildDeveloperReportV2(){
+  const queue=await pendingQueueV2();
+  const meta=await getSyncMetaV2();
+  const cachedCount=await getCachedTransactionCountV2();
+  const errors=developerErrorsV2.length?developerErrorsV2.map((item,index)=>`${index+1}. ${item.source}: ${item.message} (${formatSyncDateV2(item.at)})`).join('\n'):'None';
+  return `BudgetTracker Developer Report\n\nApp\n---\nVersion: ${APP_VERSION}\nCurrent view: ${currentViewNameV2()}\nCurrent user: ${activeUser||'—'}\nCurrent month: ${activeMonth||'—'}\n\nConnection\n----------\nOnline: ${navigator.onLine?'Yes':'No'}\nAPI: ${apiDiagnosticsV2.status}${Number.isFinite(apiDiagnosticsV2.durationMs)?` (${apiDiagnosticsV2.durationMs} ms)`:''}\nLast API error: ${apiDiagnosticsV2.lastError||'None'}\n\nData\n----\nCached transactions: ${cachedCount}\nPending sync queue: ${queue.length}\nLast successful sync: ${formatSyncDateV2(meta.lastSuccessAt)}\nLast sync error: ${meta.lastError||'None'}\n\nPerformance\n-----------\nApp data load: ${formatDurationV2(developerPerformanceV2.appDataLoadMs)}\nHistory load: ${formatDurationV2(developerPerformanceV2.historyLoadMs)}\nDashboard load: ${formatDurationV2(developerPerformanceV2.dashboardLoadMs)}\n\nSession\n-------\nBrowser: ${navigator.userAgent}\nPlatform: ${navigator.userAgentData?.platform||navigator.platform||'Unknown'}\nScreen: ${window.screen.width} x ${window.screen.height}\nViewport: ${window.innerWidth} x ${window.innerHeight}\nMode: ${pwaModeV2()}\nTimezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone||'Unknown'}\n\nErrors\n------\n${errors}`;
+}
+
+async function copyTextV2(text){
+  if(navigator.clipboard?.writeText && window.isSecureContext){await navigator.clipboard.writeText(text);return;}
+  const area=document.createElement('textarea');
+  area.value=text; area.setAttribute('readonly',''); area.style.position='fixed'; area.style.opacity='0';
+  document.body.appendChild(area); area.select();
+  const ok=document.execCommand('copy'); area.remove();
+  if(!ok) throw new Error('Clipboard permission was denied');
+}
+
+async function copyDeveloperDiagnosticsV2(){
+  const button=$('copyDeveloperDiagnosticsBtnV2');
+  try{
+    if(button){button.disabled=true;button.textContent='Copying…';}
+    await copyTextV2(await buildDeveloperReportV2());
+    showMessage('Diagnostics copied.', 'success', 1800);
+  }catch(error){recordDeveloperErrorV2('Copy diagnostics',error);showMessage('Copy failed: '+error.message,'error',4000)}
+  finally{if(button){button.disabled=false;button.textContent='Copy Diagnostics';}}
+}
+
+async function refreshDeveloperAppDataV2(){
+  const button=$('refreshDeveloperDataBtnV2');
+  try{
+    if(button){button.disabled=true;button.textContent='Refreshing…';}
+    await loadData({preferNetwork:true});
+    if(currentViewNameV2()==='History') await loadHistoryV2();
+    if(currentViewNameV2()==='Dashboard') await loadUserSpendingV2();
+    await renderSyncCenterV2();
+    await renderDeveloperDiagnosticsV2();
+    showMessage('App data refreshed.', 'success', 1800);
+  }catch(error){recordDeveloperErrorV2('Refresh app data',error);showMessage('Refresh failed: '+error.message,'error',4000)}
+  finally{if(button){button.disabled=false;button.textContent='Refresh App Data';}}
 }
 
 function initDeveloperMode(){
@@ -1990,8 +2080,13 @@ function initDeveloperMode(){
  };
  sync.addEventListener('change',()=>{localStorage.setItem(DEV_KEY,sync.checked?'1':'0');update();});
  $('refreshDeveloperDiagnosticsBtnV2')?.addEventListener('click',refreshDeveloperDiagnosticsV2);
+ $('copyDeveloperDiagnosticsBtnV2')?.addEventListener('click',copyDeveloperDiagnosticsV2);
+ $('refreshDeveloperDataBtnV2')?.addEventListener('click',refreshDeveloperAppDataV2);
  update();
 }
+window.addEventListener('error',event=>recordDeveloperErrorV2('JavaScript',event.error||event.message));
+window.addEventListener('unhandledrejection',event=>recordDeveloperErrorV2('Promise',event.reason));
 document.addEventListener('DOMContentLoaded',()=>setTimeout(initDeveloperMode,0));
 window.addEventListener('online',()=>renderDeveloperDiagnosticsV2().catch(()=>{}));
 window.addEventListener('offline',()=>renderDeveloperDiagnosticsV2().catch(()=>{}));
+
