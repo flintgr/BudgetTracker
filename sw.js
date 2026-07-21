@@ -1,4 +1,4 @@
-const CACHE_NAME = "budget-tracker-v1-1-6-history-load-optimization";
+const CACHE_NAME = "budget-tracker-v1-2-0-developer-diagnostics";
 const APP_SHELL = [
   "./", "./index.html", "./style.css", "./config.js", "./app.js", "./manifest.json",
   "./icon-192.png", "./icon-512.png",

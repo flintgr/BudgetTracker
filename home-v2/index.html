@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Family Budget — v1.1.1 Sync Center</title>
+<title>Family Budget — v1.2.0 Developer Diagnostics</title>
 <link rel="stylesheet" href="home-v2.css">
 </head>
 <body>
@@ -272,13 +272,30 @@
       </details>
 
       
-<details class="settings-menu-v2">
-<summary>Developer</summary>
-<div class="settings-menu-content-v2">
-<label><input type="checkbox" id="developerModeSwitchV2"> Enable Developer Mode</label>
-<div id="developerPanelV2" style="display:none;margin-top:12px;padding:12px;border:1px dashed #aaa;border-radius:8px">
-<strong>Developer Tools</strong><br>Coming in next update…
-</div></div></details>
+<details class="settings-menu-v2" id="developerMenuV2">
+        <summary>Developer</summary>
+        <div class="settings-menu-content-v2">
+          <label class="developer-toggle-v2"><input type="checkbox" id="developerModeSwitchV2"> Enable Developer Mode</label>
+          <section id="developerPanelV2" class="developer-panel-v2" hidden>
+            <div class="developer-panel-header-v2">
+              <div><strong>Developer Diagnostics</strong><span>Read-only application status</span></div>
+              <small>Last check: <span id="devLastCheckedV2">Not checked</span></small>
+            </div>
+            <div class="developer-grid-v2">
+              <div><span>App version</span><strong id="devAppVersionV2">—</strong></div>
+              <div><span>Connection</span><strong id="devConnectionV2">—</strong></div>
+              <div><span>API status</span><strong id="devApiStatusV2">—</strong></div>
+              <div><span>Current month</span><strong id="devCurrentMonthV2">—</strong></div>
+              <div><span>Cached transactions</span><strong id="devCachedTransactionsV2">0</strong></div>
+              <div><span>Pending sync queue</span><strong id="devPendingQueueV2">0</strong></div>
+              <div><span>Last successful sync</span><strong id="devLastSyncV2">Never</strong></div>
+              <div><span>Last sync error</span><strong id="devLastSyncErrorV2">None</strong></div>
+            </div>
+            <button id="refreshDeveloperDiagnosticsBtnV2" class="save-budgets-btn-v2" type="button">Refresh Diagnostics</button>
+            <p>No data is changed by these diagnostics.</p>
+          </section>
+        </div>
+      </details>
 
       <details class="settings-menu-v2">
         <summary>Month Management</summary>

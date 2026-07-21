@@ -31,7 +31,8 @@ function moneyWhole(value){
 }
 
 
-const APP_VERSION = "v1.1.6-history-load-optimization";
+const APP_VERSION = "v1.2.0-developer-diagnostics";
+let apiDiagnosticsV2={status:"Not checked",lastCheckedAt:"",durationMs:null,lastError:""};
 const APP_DATA_CACHE_KEY = "appData:last";
 const HISTORY_CACHE_PREFIX = "history:";
 const SYNC_META_CACHE_KEY = "sync:meta";
@@ -171,7 +172,19 @@ async function queueExpenseOfflineV2(payload,existingClientTransactionId){
 }
 
 function api(params){
-  if(!navigator.onLine) return Promise.reject(new Error("OFFLINE"));
+  if(!navigator.onLine){
+    apiDiagnosticsV2={status:"Offline",lastCheckedAt:new Date().toISOString(),durationMs:null,lastError:"Device is offline"};
+    return Promise.reject(new Error("OFFLINE"));
+  }
+  const apiStartedV2=performance.now();
+  const markApiV2=(status,error="")=>{
+    apiDiagnosticsV2={
+      status,
+      lastCheckedAt:new Date().toISOString(),
+      durationMs:Math.round(performance.now()-apiStartedV2),
+      lastError:String(error||"")
+    };
+  };
   return new Promise((resolve, reject) => {
     const callback = "fbv2_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
     const url = new URL(window.FB_CONFIG.API_URL);
@@ -200,6 +213,7 @@ function api(params){
       // "fbv2_... is not defined" in the browser console.
       window[callback] = function(){};
       script.remove();
+      markApiV2("Error","API timeout after 120 seconds");
       reject(new Error("API timeout after 120 seconds"));
 
       setTimeout(() => {
@@ -218,9 +232,11 @@ function api(params){
       settled = true;
       cleanup();
       if(!data || data.success === false){
+        markApiV2("Error",data?.error || "API error");
         reject(new Error(data?.error || "API error"));
         return;
       }
+      markApiV2("Connected");
       resolve(data);
     };
 
@@ -228,6 +244,7 @@ function api(params){
       if(settled) return;
       settled = true;
       cleanup();
+      markApiV2("Error","API request failed");
       reject(new Error("API request failed"));
     };
 
@@ -1919,12 +1936,62 @@ document.addEventListener("DOMContentLoaded",()=>{
 load().then(()=>syncPendingExpensesV2()).catch(console.error);
 
 const DEV_KEY='developerModeV2';
+
+async function getCachedTransactionCountV2(){
+  try{
+    const record=await window.BudgetOfflineStore.getCache(HISTORY_CACHE_PREFIX+activeMonth);
+    return Array.isArray(record?.value)?record.value.length:0;
+  }catch(_){return 0;}
+}
+
+async function renderDeveloperDiagnosticsV2(){
+  const set=(id,value)=>{const el=$(id);if(el)el.textContent=value;};
+  const queue=await pendingQueueV2();
+  const meta=await getSyncMetaV2();
+  const cachedCount=await getCachedTransactionCountV2();
+  set('devAppVersionV2',APP_VERSION);
+  set('devConnectionV2',navigator.onLine?'Online':'Offline');
+  set('devApiStatusV2',apiDiagnosticsV2.status+(Number.isFinite(apiDiagnosticsV2.durationMs)?` · ${apiDiagnosticsV2.durationMs} ms`:''));
+  set('devCurrentMonthV2',activeMonth||'—');
+  set('devCachedTransactionsV2',String(cachedCount));
+  set('devPendingQueueV2',String(queue.length));
+  set('devLastSyncV2',formatSyncDateV2(meta.lastSuccessAt));
+  set('devLastSyncErrorV2',meta.lastError||apiDiagnosticsV2.lastError||'None');
+  set('devLastCheckedV2',apiDiagnosticsV2.lastCheckedAt?formatSyncDateV2(apiDiagnosticsV2.lastCheckedAt):'Not checked');
+}
+
+async function refreshDeveloperDiagnosticsV2(){
+  const button=$('refreshDeveloperDiagnosticsBtnV2');
+  const oldLabel=button?.textContent||'Refresh Diagnostics';
+  try{
+    if(button){button.disabled=true;button.textContent='Checking…';}
+    if(navigator.onLine){
+      await api({action:'getAppData',user:activeUser||'',month:activeMonth||''});
+    }else{
+      apiDiagnosticsV2={status:'Offline',lastCheckedAt:new Date().toISOString(),durationMs:null,lastError:'Device is offline'};
+    }
+  }catch(error){
+    console.warn('Developer diagnostics API check failed',error);
+  }finally{
+    await renderDeveloperDiagnosticsV2();
+    if(button){button.disabled=false;button.textContent=oldLabel;}
+  }
+}
+
 function initDeveloperMode(){
- const sync=document.getElementById('developerModeSwitchV2');
- const panel=document.getElementById('developerPanelV2');
+ const sync=$('developerModeSwitchV2');
+ const panel=$('developerPanelV2');
  if(!sync||!panel)return;
- const update=()=>{const on=localStorage.getItem(DEV_KEY)==='1';sync.checked=on;panel.style.display=on?'block':'none';};
+ const update=async()=>{
+   const on=localStorage.getItem(DEV_KEY)==='1';
+   sync.checked=on;
+   panel.hidden=!on;
+   if(on) await renderDeveloperDiagnosticsV2();
+ };
  sync.addEventListener('change',()=>{localStorage.setItem(DEV_KEY,sync.checked?'1':'0');update();});
+ $('refreshDeveloperDiagnosticsBtnV2')?.addEventListener('click',refreshDeveloperDiagnosticsV2);
  update();
 }
 document.addEventListener('DOMContentLoaded',()=>setTimeout(initDeveloperMode,0));
+window.addEventListener('online',()=>renderDeveloperDiagnosticsV2().catch(()=>{}));
+window.addEventListener('offline',()=>renderDeveloperDiagnosticsV2().catch(()=>{}));
